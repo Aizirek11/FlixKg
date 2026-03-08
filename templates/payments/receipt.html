@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Чек — FlixKG{% endblock %}
+
+{% block extra_css %}
+<style>
+    .receipt-card { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px; max-width: 500px; margin: 0 auto; }
+    .receipt-header { text-align: center; border-bottom: 2px dashed #222; padding-bottom: 25px; margin-bottom: 25px; }
+    .receipt-logo { font-size: 28px; font-weight: 900; color: #e50914; }
+    .receipt-number { color: #555; font-size: 13px; margin-top: 5px; }
+    .receipt-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1a1a1a; font-size: 14px; }
+    .receipt-row .label { color: #888; }
+    .receipt-row .value { color: #fff; font-weight: 600; text-align: right; max-width: 60%; }
+    .receipt-seats { margin: 15px 0; }
+    .seat-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; color: #ccc; }
+    .receipt-total { background: #0a0a0a; border-radius: 10px; padding: 15px 20px; margin-top: 20px; }
+    .total-line { display: flex; justify-content: space-between; font-size: 14px; color: #888; margin-bottom: 8px; }
+    .total-final { display: flex; justify-content: space-between; font-size: 22px; font-weight: 900; color: #e50914; margin-top: 10px; }
+    .receipt-footer { text-align: center; margin-top: 25px; padding-top: 25px; border-top: 2px dashed #222; color: #555; font-size: 13px; }
+    .btn-download { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 12px 30px; font-weight: 700; text-decoration: none; display: inline-block; margin-top: 15px; }
+    .btn-download:hover { background: #b0070f; color: #fff; }
+    .btn-tickets { background: transparent; border: 1px solid #e50914; color: #e50914; border-radius: 8px; padding: 12px 30px; font-weight: 700; text-decoration: none; display: inline-block; margin-top: 15px; margin-left: 10px; }
+    .btn-tickets:hover { background: #e50914; color: #fff; }
+    .success-icon { font-size: 50px; margin-bottom: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pb-5">
+    <div class="receipt-card">
+
+        <!-- ЗАГОЛОВОК -->
+        <div class="receipt-header">
+            <div class="success-icon">✅</div>
+            <div class="receipt-logo">FlixKG</div>
+            <div style="color:#4ade80; font-weight:700; margin-top:5px;">Оплата прошла успешно!</div>
+            <div class="receipt-number">Чек №{{ receipt.receipt_number }}</div>
+            <div class="receipt-number">{{ receipt.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+
+        <!-- ДЕТАЛИ -->
+        <div class="receipt-row">
+            <span class="label">Фильм</span>
+            <span class="value">{{ receipt.payment.booking.session.movie.title }}</span>
+        </div>
+        <div class="receipt-row">
+            <span class="label">Дата сеанса</span>
+            <span class="value">{{ receipt.payment.booking.session.date|date:"d.m.Y" }}</span>
+        </div>
+        <div class="receipt-row">
+            <span class="label">Время</span>
+            <span class="value">{{ receipt.payment.booking.session.start_time|time:"H:i" }}</span>
+        </div>
+        <div class="receipt-row">
+            <span class="label">Зал</span>
+            <span class="value">{{ receipt.payment.booking.session.hall.name }}</span>
+        </div>
+
+        <!-- МЕСТА -->
+        <div class="receipt-seats">
+            <div class="label mb-2" style="font-size:13px;">Места:</div>
+            {% for seat in receipt.payment.booking.seats.all %}
+            <div class="seat-item">
+                <span>Ряд {{ seat.row }}, Место {{ seat.number }} {% if seat.seat_type == 'vip' %}👑 VIP{% endif %}</span>
+                <span>{% if seat.seat_type == 'vip' %}{{ receipt.payment.booking.session.price_vip }}{% else %}{{ receipt.payment.booking.session.price_standard }}{% endif %} сом</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ИТОГО -->
+        <div class="receipt-total">
+            <div class="total-line">
+                <span>Количество билетов</span>
+                <span>{{ receipt.payment.booking.seats.count }} шт</span>
+            </div>
+            <div class="total-line">
+                <span>Способ оплаты</span>
+                <span>💳 Картой</span>
+            </div>
+            <div class="total-final">
+                <span>К оплате</span>
+                <span>{{ receipt.payment.amount }} сом</span>
+            </div>
+        </div>
+
+        <!-- ФУТЕР -->
+        <div class="receipt-footer">
+            <p>Спасибо за покупку!</p>
+            <p>Приятного просмотра! 🎬</p>
+            <div>
+                <a href="/account/" class="btn-tickets">Мои билеты</a>
+                <a href="/movies/" class="btn-download">На главную</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

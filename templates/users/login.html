@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Вход — FlixKG{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-card { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px; max-width: 440px; margin: 60px auto; }
+    .auth-title { font-size: 28px; font-weight: 900; margin-bottom: 5px; }
+    .auth-input { background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 8px; padding: 12px 15px; width: 100%; font-size: 15px; }
+    .auth-input:focus { outline: none; border-color: #e50914; }
+    .auth-input::placeholder { color: #555; }
+    .input-label { color: #888; font-size: 13px; margin-bottom: 6px; }
+    .btn-auth { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 13px; width: 100%; font-size: 16px; font-weight: 700; }
+    .btn-auth:hover { background: #b0070f; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-card">
+        <div class="auth-title">Вход в FlixKG</div>
+        <p class="text-secondary mb-4">Войдите чтобы бронировать билеты</p>
+
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <div class="input-label">Имя пользователя</div>
+                <input type="text" name="username" class="auth-input" placeholder="Введите имя пользователя" required>
+            </div>
+            <div class="mb-4">
+                <div class="input-label">Пароль</div>
+                <input type="password" name="password" class="auth-input" placeholder="Введите пароль" required>
+            </div>
+            <button type="submit" class="btn-auth">Войти</button>
+        </form>
+
+        <p class="text-center mt-4 text-secondary">
+            Нет аккаунта? <a href="/register/" style="color:#e50914;">Зарегистрироваться</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

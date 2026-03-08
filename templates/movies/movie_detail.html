@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ movie.title }} — FlixKG{% endblock %}
+
+{% block extra_css %}
+<style>
+    .movie-hero { background: #fff; padding: 40px 0; border-bottom: 1px solid #ddd; }
+    .movie-poster { border-radius: 12px; width: 100%; max-width: 250px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+    .movie-title { font-size: 36px; font-weight: 900; color: #1a1a1a; }
+    .badge-genre { background: #f0f0f0; border: 1px solid #ddd; color: #555; padding: 5px 12px; border-radius: 20px; font-size: 12px; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+    .rating-big { font-size: 26px; font-weight: 900; color: #f5c518; }
+    .movie-meta { color: #555; font-size: 14px; }
+    .movie-meta span { color: #1a1a1a; font-weight: 600; }
+
+    .trailer-container { border-radius: 12px; overflow: hidden; }
+    .trailer-container iframe { width: 100%; height: 380px; border: none; }
+
+    .section-header { font-size: 20px; font-weight: 800; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #e50914; display: inline-block; color: #1a1a1a; }
+
+    .actor-card { background: #fff; border-radius: 10px; overflow: hidden; text-align: center; transition: transform 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .actor-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+    .actor-card img { width: 100%; height: 150px; object-fit: cover; }
+    .actor-card .no-photo { width: 100%; height: 150px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+    .actor-card .actor-name { font-size: 12px; font-weight: 700; color: #1a1a1a; padding: 8px 5px 2px; }
+    .actor-card .actor-role { font-size: 11px; color: #888; padding-bottom: 8px; }
+
+    .session-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 15px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .session-card:hover { border-color: #e50914; box-shadow: 0 5px 15px rgba(229,9,20,0.1); }
+    .session-time { font-size: 26px; font-weight: 900; color: #e50914; }
+    .session-info { color: #888; font-size: 13px; }
+    .price { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+    .btn-book { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; transition: background 0.2s; text-decoration: none; display: inline-block; }
+    .btn-book:hover { background: #b0070f; color: #fff; }
+    .btn-login-required { background: #f0f0f0; color: #888; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; text-decoration: none; display: inline-block; font-size: 13px; }
+
+    .review-card { background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .review-user { font-weight: 700; color: #1a1a1a; }
+    .review-date { font-size: 12px; color: #aaa; }
+    .review-text { color: #555; margin-top: 8px; font-size: 14px; line-height: 1.6; }
+
+    .review-form { background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #ddd; margin-bottom: 20px; }
+    .form-control, .form-select { background: #f5f5f5; border: 1px solid #ddd; color: #1a1a1a; border-radius: 8px; }
+    .form-control:focus, .form-select:focus { border-color: #e50914; box-shadow: none; background: #fff; }
+    .btn-review { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 10px 25px; font-weight: 600; }
+    .btn-review:hover { background: #b0070f; color: #fff; }
+
+    .no-poster-big { width: 100%; max-width: 250px; height: 350px; background: #f0f0f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 80px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- MOVIE HERO -->
+<div class="movie-hero">
+    <div class="container">
+        <div class="row align-items-start g-4">
+            <div class="col-md-3 text-center">
+                {% if movie.poster %}
+                <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="movie-poster">
+                {% else %}
+                <div class="no-poster-big mx-auto">🎬</div>
+                {% endif %}
+            </div>
+            <div class="col-md-9">
+                <div class="mb-3">
+                    {% for genre in movie.genre.all %}
+                    <span class="badge-genre">{{ genre.name }}</span>
+                    {% endfor %}
+                </div>
+                <h1 class="movie-title">{{ movie.title }}</h1>
+                <div class="d-flex align-items-center gap-3 mt-3 mb-3">
+                    <div class="rating-big">⭐ {{ movie.average_rating }}</div>
+                    <div class="text-secondary">({{ movie.reviews.count }} отзывов)</div>
+                </div>
+                <div class="d-flex gap-4 movie-meta mb-3 flex-wrap">
+                    <div>📅 Год: <span>{{ movie.release_year }}</span></div>
+                    <div>⏱ Длительность: <span>{{ movie.duration }} мин</span></div>
+                    <div>🔞 Рейтинг: <span>{{ movie.age_limit }}</span></div>
+                </div>
+                <p class="text-secondary" style="max-width:600px; line-height:1.7;">{{ movie.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4 pb-5">
+    <div class="row g-4">
+        <div class="col-lg-8">
+
+            <!-- ТРЕЙЛЕР -->
+            {% if movie.trailer_embed %}
+            <div class="mb-4">
+                <div class="section-header">🎬 Трейлер</div>
+                <div class="trailer-container mt-3">
+                    <iframe src="{{ movie.trailer_embed }}" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- АКТЁРЫ -->
+            {% if movie.movie_actors.all %}
+            <div class="mb-4">
+                <div class="section-header">🎭 Актёры</div>
+                <div class="row g-3 mt-1">
+                    {% for movie_actor in movie.movie_actors.all %}
+                    <div class="col-4 col-md-3 col-lg-2">
+                        <div class="actor-card">
+                            {% if movie_actor.actor.photo %}
+                            <img src="{{ movie_actor.actor.photo.url }}" alt="{{ movie_actor.actor.name }}">
+                            {% else %}
+                            <div class="no-photo">👤</div>
+                            {% endif %}
+                            <div class="actor-name">{{ movie_actor.actor.name }}</div>
+                            <div class="actor-role">{{ movie_actor.role }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ОТЗЫВЫ -->
+            <div class="mb-4">
+                <div class="section-header">💬 Отзывы</div>
+
+                {% if user.is_authenticated %}
+                <div class="review-form mt-3">
+                    <form method="post" action="/movies/{{ movie.id }}/review/">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="fw-600 mb-2" style="color:#555; font-size:14px;">Ваша оценка:</label>
+                            <select name="rating" class="form-select" style="width:auto;">
+                                <option value="5">⭐⭐⭐⭐⭐ Отлично</option>
+                                <option value="4">⭐⭐⭐⭐ Хорошо</option>
+                                <option value="3">⭐⭐⭐ Нормально</option>
+                                <option value="2">⭐⭐ Плохо</option>
+                                <option value="1">⭐ Ужасно</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <textarea name="text" class="form-control" rows="3" placeholder="Напишите ваш отзыв..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-review">Оставить отзыв</button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="alert mt-3" style="background:#fff3cd; border:1px solid #ffc107; color:#856404; border-radius:10px;">
+                    <a href="/login/" style="color:#e50914; font-weight:700;">Войдите</a>, чтобы оставить отзыв
+                </div>
+                {% endif %}
+
+                {% for review in movie.reviews.all %}
+                <div class="review-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="review-user">👤 {{ review.user.username }}</span>
+                        <span class="review-date">{{ review.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                    <div style="color:#f5c518; margin-top:5px;">
+                        {% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}
+                    </div>
+                    <p class="review-text">{{ review.text }}</p>
+                </div>
+                {% empty %}
+                <p class="text-secondary mt-3">Пока нет отзывов. Будьте первым!</p>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <!-- СЕАНСЫ -->
+        <div class="col-lg-4">
+            <div class="section-header">📅 Сеансы</div>
+            <div class="mt-3">
+                {% for session in sessions %}
+                <div class="session-card">
+                    <div>
+                        <div class="session-time">{{ session.start_time|time:"H:i" }}</div>
+                        <div class="session-info">{{ session.date|date:"d M Y" }}</div>
+                        <div class="session-info">🏛 {{ session.hall.name }}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="price">от {{ session.price_standard }} сом</div>
+                        <div class="text-secondary mb-2" style="font-size:12px;">VIP: {{ session.price_vip }} сом</div>
+                        {% if user.is_authenticated %}
+                        <a href="/sessions/{{ session.id }}/seats/" class="btn-book">Выбрать места</a>
+                        {% else %}
+                        <a href="/login/" class="btn-login-required">🔒 Войдите</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4" style="background:#fff; border-radius:10px; border:1px solid #ddd;">
+                    <p class="text-secondary mb-0">Сеансов пока нет</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

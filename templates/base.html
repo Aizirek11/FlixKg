@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FlixKG{% endblock %}</title>
+    {% load static %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #e8e8e8; color: #1a1a1a; font-family: 'Segoe UI', sans-serif; }
+
+        /* NAVBAR */
+        .navbar { background: #fff; border-bottom: 1px solid #d0d0d0; padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .navbar-brand { font-size: 28px; font-weight: 900; color: #e50914 !important; letter-spacing: -1px; }
+        .navbar-brand span { color: #1a1a1a; }
+        .nav-link { color: #555 !important; font-size: 14px; margin: 0 5px; transition: color 0.2s; }
+        .nav-link:hover { color: #e50914 !important; }
+        .search-input { background: #f5f5f5; border: 1px solid #ddd; color: #1a1a1a; border-radius: 20px; padding: 8px 20px; width: 300px; }
+        .search-input:focus { background: #fff; border-color: #e50914; color: #1a1a1a; box-shadow: none; }
+        .btn-login { background: transparent; border: 1px solid #e50914; color: #e50914; border-radius: 20px; padding: 6px 20px; font-size: 14px; }
+        .btn-login:hover { background: #e50914; color: #fff; }
+        .btn-register { background: #e50914; border: none; color: #fff; border-radius: 20px; padding: 6px 20px; font-size: 14px; }
+        .btn-register:hover { background: #b0070f; }
+        .user-menu { color: #1a1a1a; cursor: pointer; }
+
+        /* MESSAGES */
+        .messages { position: fixed; top: 80px; right: 20px; z-index: 9999; }
+
+        /* FOOTER */
+        footer { background: #fff; border-top: 1px solid #d0d0d0; padding: 40px 0 20px; margin-top: 60px; }
+        footer .footer-brand { font-size: 24px; font-weight: 900; color: #e50914; }
+        footer p { color: #555; font-size: 13px; }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/">Flix<span>KG</span></a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav me-auto ms-4">
+                <li class="nav-item"><a class="nav-link" href="/">Афиша</a></li>
+                <li class="nav-item"><a class="nav-link" href="/movies/">Фильмы</a></li>
+                {% if user.is_staff %}
+                <li class="nav-item"><a class="nav-link text-danger fw-bold" href="/admin-panel/">⚙️ Управление</a></li>
+                {% endif %}
+            </ul>
+
+            <form class="d-flex me-3" action="/movies/" method="get">
+                <input class="form-control search-input" type="search" name="search" placeholder="🔍 Поиск фильмов..." value="{{ request.GET.search }}">
+            </form>
+
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+                <button class="btn user-menu dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" style="background:#fff; border:1px solid #ddd;">
+                    <li><a class="dropdown-item" href="/account/"><i class="fas fa-ticket-alt me-2"></i>Мои билеты</a></li>
+                    {% if user.is_staff %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-warning" href="/admin/"><i class="fas fa-cog me-2"></i>Django Admin</a></li>
+                    <li><a class="dropdown-item text-danger" href="/admin-panel/"><i class="fas fa-film me-2"></i>Добавить фильм</a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="/logout/"><i class="fas fa-sign-out-alt me-2"></i>Выйти</a></li>
+                </ul>
+            </div>
+            {% else %}
+            <a href="/login/" class="btn btn-login me-2">Войти</a>
+            <a href="/register/" class="btn btn-register">Регистрация</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- MESSAGES -->
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- CONTENT -->
+{% block content %}{% endblock %}
+
+<!-- FOOTER -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="footer-brand">FlixKG</div>
+                <p class="mt-2">Бронирование билетов в кинотеатр онлайн</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="mb-3">Навигация</h6>
+                <p><a href="/" class="text-secondary text-decoration-none">Афиша</a></p>
+                <p><a href="/movies/" class="text-secondary text-decoration-none">Фильмы</a></p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="mb-3">Контакты</h6>
+                <p class="text-secondary"><i class="fas fa-envelope me-2"></i>info@flixkg.com</p>
+                <p class="text-secondary"><i class="fas fa-phone me-2"></i>+996 700 000 000</p>
+            </div>
+        </div>
+        <hr style="border-color:#ddd; margin-top:30px;">
+        <p class="text-center text-secondary">© 2024 FlixKG. Все права защищены.</p>
+    </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

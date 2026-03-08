@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Личный кабинет — FlixKG{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ticket-card { background: #111; border: 1px solid #222; border-radius: 12px; overflow: hidden; margin-bottom: 20px; transition: border-color 0.2s; }
+    .ticket-card:hover { border-color: #e50914; }
+    .ticket-card.used { opacity: 0.5; filter: grayscale(1); }
+    .ticket-header { background: #0a0a0a; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .ticket-movie { font-size: 18px; font-weight: 700; }
+    .ticket-status-active { background: #064e3b; color: #4ade80; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .ticket-status-used { background: #1f2937; color: #6b7280; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .ticket-body { padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .ticket-info { font-size: 14px; color: #888; }
+    .ticket-info span { color: #fff; font-weight: 600; }
+    .ticket-number { font-size: 12px; color: #555; font-family: monospace; }
+    .qr-code { width: 80px; height: 80px; border-radius: 8px; }
+    .btn-pdf { background: transparent; border: 1px solid #333; color: #888; border-radius: 6px; padding: 6px 15px; font-size: 12px; text-decoration: none; transition: all 0.2s; }
+    .btn-pdf:hover { border-color: #e50914; color: #e50914; }
+
+    .profile-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 25px; margin-bottom: 30px; }
+    .avatar { width: 70px; height: 70px; background: #e50914; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: #fff; }
+    .stats-box { background: #0a0a0a; border-radius: 10px; padding: 15px; text-align: center; }
+    .stats-number { font-size: 28px; font-weight: 900; color: #e50914; }
+    .stats-label { font-size: 12px; color: #666; margin-top: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pb-5">
+
+    <!-- ПРОФИЛЬ -->
+    <div class="profile-card">
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+            <div class="avatar">{{ user.username.0|upper }}</div>
+            <div>
+                <h3 class="mb-0">{{ user.username }}</h3>
+                <p class="text-secondary mb-0">{{ user.email }}</p>
+                {% if user.phone %}<p class="text-secondary mb-0">{{ user.phone }}</p>{% endif %}
+            </div>
+            <div class="ms-auto">
+                <div class="row g-3">
+                    <div class="col-auto">
+                        <div class="stats-box">
+                            <div class="stats-number">{{ tickets.count }}</div>
+                            <div class="stats-label">Всего билетов</div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="stats-box">
+                            <div class="stats-number">{{ active_count }}</div>
+                            <div class="stats-label">Активных</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- БИЛЕТЫ -->
+    <h3 class="fw-bold mb-4">🎟️ Мои билеты</h3>
+
+    {% for ticket in tickets %}
+    <div class="ticket-card {% if not ticket.is_active %}used{% endif %}">
+        <div class="ticket-header">
+            <div class="ticket-movie">🎬 {{ ticket.booking.session.movie.title }}</div>
+            {% if ticket.is_active %}
+            <span class="ticket-status-active">✅ Активен</span>
+            {% else %}
+            <span class="ticket-status-used">⬜ Использован</span>
+            {% endif %}
+        </div>
+        <div class="ticket-body">
+            <div>
+                <div class="ticket-info">📅 Дата: <span>{{ ticket.booking.session.date|date:"d.m.Y" }}</span></div>
+                <div class="ticket-info">🕐 Время: <span>{{ ticket.booking.session.start_time|time:"H:i" }}</span></div>
+                <div class="ticket-info">🏛 Зал: <span>{{ ticket.booking.session.hall.name }}</span></div>
+                <div class="ticket-info">💺 Места:
+                    <span>
+                        {% for seat in ticket.booking.seats.all %}
+                        Р{{ seat.row }}М{{ seat.number }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                <div class="ticket-info">💰 Сумма: <span>{{ ticket.booking.total_price }} сом</span></div>
+                <div class="ticket-number mt-2">№ {{ ticket.ticket_number }}</div>
+            </div>
+            <div class="text-center">
+                {% if ticket.qr_code %}
+                <img src="{{ ticket.qr_code.url }}" alt="QR" class="qr-code mb-2">
+                {% endif %}
+                <br>
+                <a href="/tickets/{{ ticket.id }}/pdf/" class="btn-pdf">📥 Скачать PDF</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <div style="font-size:60px;">🎟️</div>
+        <h4 class="mt-3 text-secondary">У вас пока нет билетов</h4>
+        <a href="/movies/" class="btn btn-register mt-3" style="background:#e50914; color:#fff; border-radius:8px; padding:10px 30px;">Выбрать фильм</a>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

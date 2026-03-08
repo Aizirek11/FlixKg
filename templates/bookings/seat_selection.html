@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Выбор мест — FlixKG{% endblock %}
+
+{% block extra_css %}
+<style>
+    .screen-label { text-align: center; color: #888; font-size: 13px; letter-spacing: 3px; font-weight: 600; margin-bottom: 8px; }
+    .screen { background: #aaa; height: 4px; margin: 0 auto 30px; width: 70%; border-radius: 2px; }
+
+    .seat { width: 36px; height: 36px; border-radius: 6px 6px 3px 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; transition: all 0.2s; border: none; }
+    .seat.standard { background: #1e4d2b; color: #4ade80; }
+    .seat.vip { background: #1e4d2b; color: #4ade80; }
+    .seat.standard:hover, .seat.vip:hover { background: #166534; transform: scale(1.1); }
+    .seat.occupied { background: #ccc; color: #999; cursor: not-allowed; }
+    .seat.selected { background: #e50914; color: #fff; transform: scale(1.1); box-shadow: 0 0 10px rgba(229,9,20,0.4); }
+
+    .row-label { color: #888; font-size: 12px; width: 25px; text-align: center; }
+    .seats-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; justify-content: center; }
+
+    .legend { display: flex; gap: 25px; justify-content: center; margin-bottom: 30px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #555; }
+    .legend-box { width: 22px; height: 22px; border-radius: 4px; }
+
+    .booking-summary { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 20px; position: sticky; top: 80px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
+    .summary-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: #1a1a1a; }
+    .seat-tag { background: #e50914; color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 12px; display: inline-block; margin: 3px; }
+    .total-price { font-size: 24px; font-weight: 900; color: #e50914; }
+    .btn-confirm { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 12px; width: 100%; font-size: 16px; font-weight: 700; transition: background 0.2s; }
+    .btn-confirm:hover { background: #b0070f; }
+    .btn-confirm:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+    .info-label { font-size: 13px; color: #888; margin-bottom: 3px; }
+    .info-value { font-weight: 700; color: #1a1a1a; margin-bottom: 12px; }
+    .address-badge { background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; padding: 10px 15px; font-size: 13px; color: #555; margin-bottom: 15px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pb-5">
+
+    <!-- ЗАГОЛОВОК -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold" style="color:#1a1a1a;">{{ session.movie.title }}</h2>
+        <p class="text-secondary">{{ session.date|date:"d M Y" }} • {{ session.start_time|time:"H:i" }} • {{ session.hall.name }}</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+
+            <!-- ЭКРАН -->
+            <div class="screen-label">ЭКРАН</div>
+            <div class="screen"></div>
+
+            <!-- ЛЕГЕНДА -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box" style="background:#1e4d2b;"></div> Свободно
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box" style="background:#ccc;"></div> Занято
+                </div>
+            </div>
+
+            <!-- МЕСТА -->
+            <div id="hall">
+                {% regroup seats by row as rows %}
+                {% for row in rows %}
+                <div class="seats-row">
+                    <div class="row-label">{{ row.grouper }}</div>
+                    {% for seat in row.list %}
+                    <button
+                        class="seat {{ seat.seat_type }} {% if seat.id in booked_seats %}occupied{% endif %}"
+                        data-seat-id="{{ seat.id }}"
+                        data-row="{{ seat.row }}"
+                        data-number="{{ seat.number }}"
+                        data-type="{{ seat.seat_type }}"
+                        data-price="{% if seat.seat_type == 'vip' %}{{ session.price_vip }}{% else %}{{ session.price_standard }}{% endif %}"
+                        {% if seat.id in booked_seats %}disabled{% endif %}
+                        onclick="toggleSeat(this)"
+                        title="Ряд {{ seat.row }}, Место {{ seat.number }}">
+                        {{ seat.number }}
+                    </button>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <!-- СВОДКА -->
+        <div class="col-lg-4">
+            <div class="booking-summary">
+                <div class="summary-title">🎟️ Ваш заказ</div>
+
+                <div class="info-label">Фильм:</div>
+                <div class="info-value">{{ session.movie.title }}</div>
+
+                <div class="info-label">Сеанс:</div>
+                <div class="info-value">{{ session.date|date:"d.m.Y" }} {{ session.start_time|time:"H:i" }}</div>
+
+                <div class="info-label">Зал:</div>
+                <div class="info-value">{{ session.hall.name }}</div>
+
+                <div class="info-label">📍 Адрес:</div>
+                <div class="address-badge">
+                    <i class="fas fa-map-marker-alt me-1" style="color:#e50914;"></i>
+                    {{ session.hall.address|default:"ул. Чуй 123, Бишкек" }}
+                </div>
+
+                <hr style="border-color:#eee;">
+
+                <div class="info-label mb-2">Выбранные места:</div>
+                <div id="selectedSeatsList">
+                    <span class="text-secondary" style="font-size:13px;">Выберите места на схеме</span>
+                </div>
+
+                <hr style="border-color:#eee;">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="text-secondary">Итого:</span>
+                    <span class="total-price" id="totalPrice">0 сом</span>
+                </div>
+
+                <form method="post" action="/bookings/create/" id="bookingForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="session_id" value="{{ session.id }}">
+                    <input type="hidden" name="seat_ids" id="seatIdsInput" value="">
+                    <button type="submit" class="btn-confirm" id="confirmBtn" disabled>
+                        Перейти к оплате
+                    </button>
+                </form>
+
+                <div class="mt-3 text-center">
+                    <small class="text-secondary">Обычное — {{ session.price_standard }} сом • VIP — {{ session.price_vip }} сом</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedSeats = [];
+
+    function toggleSeat(btn) {
+        const seatId = parseInt(btn.dataset.seatId);
+        const row = btn.dataset.row;
+        const number = btn.dataset.number;
+        const type = btn.dataset.type;
+        const price = parseFloat(btn.dataset.price);
+        const index = selectedSeats.findIndex(s => s.id === seatId);
+
+        if (index === -1) {
+            selectedSeats.push({ id: seatId, row, number, type, price });
+            btn.classList.add('selected');
+        } else {
+            selectedSeats.splice(index, 1);
+            btn.classList.remove('selected');
+        }
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const list = document.getElementById('selectedSeatsList');
+        const total = document.getElementById('totalPrice');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const seatIdsInput = document.getElementById('seatIdsInput');
+
+        if (selectedSeats.length === 0) {
+            list.innerHTML = '<span class="text-secondary" style="font-size:13px;">Выберите места на схеме</span>';
+            total.textContent = '0 сом';
+            confirmBtn.disabled = true;
+            seatIdsInput.value = '';
+            return;
+        }
+
+        let html = '';
+        let totalPrice = 0;
+        selectedSeats.forEach(seat => {
+            html += `<span class="seat-tag">Р${seat.row} М${seat.number}</span>`;
+            totalPrice += seat.price;
+        });
+
+        list.innerHTML = html;
+        total.textContent = totalPrice + ' сом';
+        confirmBtn.disabled = false;
+        seatIdsInput.value = selectedSeats.map(s => s.id).join(',');
+    }
+</script>
+{% endblock %}
