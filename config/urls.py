@@ -5,18 +5,17 @@ from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from movies.views import ( add_hall_view)
-
-from movies.views import movie_list_view, movie_detail_view, add_review_view
-from bookings.views import seat_selection_view, create_booking_view
-from payments.views import payment_view, receipt_view, ticket_pdf_view
-from users.views import login_view, register_view, logout_view, account_view
+from movies.views import ( add_movie_actor_view, delete_movie_actor_view)
 from movies.views import (
     movie_list_view, movie_detail_view, add_review_view,
     admin_panel_view, add_movie_view, delete_movie_view,
     add_actor_view, delete_actor_view,
-    add_session_view, delete_session_view
+    add_session_view, delete_session_view,
+    add_hall_view, edit_movie_view
 )
+from bookings.views import seat_selection_view, create_booking_view
+from payments.views import payment_view, receipt_view, ticket_pdf_view
+from users.views import login_view, register_view, logout_view, account_view
 
 
 @api_view(['GET'])
@@ -92,15 +91,18 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
     path('account/', account_view, name='account'),
-# Админ панель HTML
-path('admin-panel/', admin_panel_view, name='admin-panel'),
-path('admin-panel/movie/add/', add_movie_view, name='add-movie'),
-path('admin-panel/movie/<int:pk>/delete/', delete_movie_view, name='delete-movie'),
-path('admin-panel/actor/add/', add_actor_view, name='add-actor'),
-path('admin-panel/actor/<int:pk>/delete/', delete_actor_view, name='delete-actor'),
-path('admin-panel/session/add/', add_session_view, name='add-session'),
-path('admin-panel/session/<int:pk>/delete/', delete_session_view, name='delete-session'),
-path('admin-panel/hall/add/', add_hall_view, name='add-hall'),
+
+    # Админ панель HTML
+    path('admin-panel/', admin_panel_view, name='admin-panel'),
+    path('admin-panel/movie/add/', add_movie_view, name='add-movie'),
+    path('admin-panel/movie/<int:pk>/edit/', edit_movie_view, name='edit-movie'),
+    path('admin-panel/movie/<int:pk>/delete/', delete_movie_view, name='delete-movie'),
+    path('admin-panel/actor/add/', add_actor_view, name='add-actor'),
+    path('admin-panel/actor/<int:pk>/delete/', delete_actor_view, name='delete-actor'),
+    path('admin-panel/session/add/', add_session_view, name='add-session'),
+    path('admin-panel/session/<int:pk>/delete/', delete_session_view, name='delete-session'),
+    path('admin-panel/hall/add/', add_hall_view, name='add-hall'),
+
     # API
     path('api/', api_root, name='api-root'),
     path('api/users/', include('users.urls')),
@@ -109,6 +111,8 @@ path('admin-panel/hall/add/', add_hall_view, name='add-hall'),
     path('api/', include('payments.urls')),
     path('api/', include('notifications.urls')),
     path('api-auth/', include('rest_framework.urls')),
+path('admin-panel/movie-actor/add/', add_movie_actor_view, name='add-movie-actor'),
+path('admin-panel/movie-actor/<int:pk>/delete/', delete_movie_actor_view, name='delete-movie-actor'),
 
     # Swagger
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

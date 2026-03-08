@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -71,9 +72,25 @@ def logout_view(request):
 
 @login_required
 def account_view(request):
-    tickets = Ticket.objects.filter(booking__user=request.user).order_by('-created_at')
-    active_count = sum(1 for t in tickets if t.is_active())
+    all_tickets = Ticket.objects.filter(booking__user=request.user).order_by('-created_at')
+
+    active_tickets = [t for t in all_tickets if t.is_active]
+    used_tickets = [t for t in all_tickets if not t.is_active]
+
+    # Пагинация активных
+    active_paginator = Paginator(active_tickets, 7)
+    active_page = request.GET.get('active_page', 1)
+    active_tickets_page = active_paginator.get_page(active_page)
+
+    # Пагинация использованных
+    used_paginator = Paginator(used_tickets, 7)
+    used_page = request.GET.get('used_page', 1)
+    used_tickets_page = used_paginator.get_page(used_page)
+
     return render(request, 'users/account.html', {
-        'tickets': tickets,
-        'active_count': active_count,
+        'active_tickets': active_tickets_page,
+        'used_tickets': used_tickets_page,
+        'active_count': len(active_tickets),
+        'used_count': len(used_tickets),
+        'total_count': all_tickets.count(),
     })

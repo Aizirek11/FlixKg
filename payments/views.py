@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, generics
@@ -142,37 +143,68 @@ def receipt_view(request, receipt_number):
 def ticket_pdf_view(request, pk):
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import A4
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
     from django.http import HttpResponse
+    import os
     import io
 
     ticket = get_object_or_404(Ticket, pk=pk, booking__user=request.user)
+
+    font_path = os.path.join(settings.BASE_DIR, 'DejaVuSans.ttf')
+    font_bold_path = os.path.join(settings.BASE_DIR, 'DejaVuSans-Bold.ttf')
+
+    pdfmetrics.registerFont(TTFont('DejaVu', font_path))
+    pdfmetrics.registerFont(TTFont('DejaVu-Bold', font_bold_path))
+
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
 
+    # Фон
     p.setFillColorRGB(0, 0, 0)
     p.rect(0, 0, 595, 842, fill=1)
 
+    # Логотип
     p.setFillColorRGB(0.9, 0.04, 0.08)
-    p.setFont("Helvetica-Bold", 32)
-    p.drawString(50, 750, "FlixKG")
+    p.setFont('DejaVu-Bold', 36)
+    p.drawString(50, 760, 'FlixKG')
 
+    # Название фильма
     p.setFillColorRGB(1, 1, 1)
-    p.setFont("Helvetica-Bold", 20)
-    p.drawString(50, 700, ticket.booking.session.movie.title)
+    p.setFont('DejaVu-Bold', 22)
+    p.drawString(50, 710, ticket.booking.session.movie.title)
 
-    p.setFont("Helvetica", 14)
-    p.drawString(50, 660, f"Дата: {ticket.booking.session.date}")
-    p.drawString(50, 635, f"Время: {ticket.booking.session.start_time}")
-    p.drawString(50, 610, f"Зал: {ticket.booking.session.hall.name}")
+    # Детали
+    p.setFont('DejaVu', 14)
+    p.drawString(50, 670, f'Дата: {ticket.booking.session.date}')
+    p.drawString(50, 645, f'Время: {ticket.booking.session.start_time}')
+    p.drawString(50, 620, f'Зал: {ticket.booking.session.hall.name}')
 
+    # Места
+    p.drawString(50, 595, 'Места:')
     seats = ticket.booking.seats.all()
-    seats_str = ', '.join([f"Р{s.row}М{s.number}" for s in seats])
-    p.drawString(50, 585, f"Места: {seats_str}")
-    p.drawString(50, 560, f"Сумма: {ticket.booking.total_price} сом")
-    p.drawString(50, 535, f"Билет: {ticket.ticket_number}")
+    y = 572
+    for s in seats:
+        seat_type_ru = 'VIP' if s.seat_type == 'vip' else 'Обычное'
+        p.drawString(70, y, f'Ряд {s.row},  Место {s.number}  — {seat_type_ru}')
+        y -= 22
 
+    # Сумма
+    p.drawString(50, y - 15, f'Сумма: {ticket.booking.total_price} сом')
+
+    # Разделитель
+    p.setStrokeColorRGB(0.9, 0.04, 0.08)
+    p.setLineWidth(2)
+    p.line(50, y - 35, 545, y - 35)
+
+    # Номер билета
+    p.setFont('DejaVu', 12)
+    p.setFillColorRGB(0.7, 0.7, 0.7)
+    p.drawString(50, y - 55, f'Билет №: {ticket.ticket_number}')
+
+    # QR-код
     if ticket.qr_code:
-        p.drawImage(ticket.qr_code.path, 400, 500, width=150, height=150)
+        p.drawImage(ticket.qr_code.path, 390, 580, width=160, height=160)
 
     p.showPage()
     p.save()

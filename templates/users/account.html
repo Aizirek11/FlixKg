@@ -3,26 +3,63 @@
 
 {% block extra_css %}
 <style>
-    .ticket-card { background: #111; border: 1px solid #222; border-radius: 12px; overflow: hidden; margin-bottom: 20px; transition: border-color 0.2s; }
-    .ticket-card:hover { border-color: #e50914; }
-    .ticket-card.used { opacity: 0.5; filter: grayscale(1); }
-    .ticket-header { background: #0a0a0a; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .ticket-movie { font-size: 18px; font-weight: 700; }
-    .ticket-status-active { background: #064e3b; color: #4ade80; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-    .ticket-status-used { background: #1f2937; color: #6b7280; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-    .ticket-body { padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-    .ticket-info { font-size: 14px; color: #888; }
-    .ticket-info span { color: #fff; font-weight: 600; }
-    .ticket-number { font-size: 12px; color: #555; font-family: monospace; }
-    .qr-code { width: 80px; height: 80px; border-radius: 8px; }
-    .btn-pdf { background: transparent; border: 1px solid #333; color: #888; border-radius: 6px; padding: 6px 15px; font-size: 12px; text-decoration: none; transition: all 0.2s; }
-    .btn-pdf:hover { border-color: #e50914; color: #e50914; }
+    body { background: #e8e8e8; }
 
-    .profile-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 25px; margin-bottom: 30px; }
+    .profile-card { background: #fff; border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
     .avatar { width: 70px; height: 70px; background: #e50914; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: #fff; }
-    .stats-box { background: #0a0a0a; border-radius: 10px; padding: 15px; text-align: center; }
+    .stats-box { background: #f5f5f5; border-radius: 10px; padding: 15px 25px; text-align: center; }
     .stats-number { font-size: 28px; font-weight: 900; color: #e50914; }
-    .stats-label { font-size: 12px; color: #666; margin-top: 3px; }
+    .stats-label { font-size: 12px; color: #555; margin-top: 3px; font-weight: 600; }
+
+    .section-tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+    .section-tab { background: #fff; border: 2px solid #ddd; color: #555; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 700; transition: all 0.2s; text-decoration: none; }
+    .section-tab:hover { border-color: #e50914; color: #e50914; }
+    .section-tab.active { background: #e50914; border-color: #e50914; color: #fff; }
+    .section-tab .tab-count { background: rgba(255,255,255,0.3); border-radius: 10px; padding: 1px 8px; font-size: 12px; margin-left: 6px; }
+    .section-tab:not(.active) .tab-count { background: #f0f0f0; color: #999; }
+
+    .ticket-wrap { margin-bottom: 25px; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.12)); }
+    .ticket { background: #fff; border-radius: 16px; overflow: hidden; display: flex; }
+    .ticket.used { opacity: 0.6; filter: grayscale(0.8); }
+
+    .ticket-left { flex: 1; padding: 25px; }
+    .ticket-right { width: 160px; background: #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
+    .ticket-right::before { content: ''; position: absolute; left: -1px; top: 20px; bottom: 20px; border-left: 3px dashed #ddd; }
+    .ticket-right::after { content: ''; position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; background: #e8e8e8; border-radius: 50%; }
+
+    .ticket-tag { display: inline-block; background: #e50914; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase; }
+    .ticket-tag.used-tag { background: #999; }
+    .ticket-movie-title { font-size: 22px; font-weight: 900; color: #1a1a1a; margin-bottom: 18px; line-height: 1.3; }
+
+    .ticket-details { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .ticket-detail-item { background: #f5f5f5; border-radius: 8px; padding: 10px 14px; }
+    .ticket-detail-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; font-weight: 700; }
+    .ticket-detail-value { font-size: 15px; font-weight: 800; color: #1a1a1a; }
+
+    .seats-section { margin-top: 12px; }
+    .seats-title { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; font-weight: 700; }
+    .seats-grid { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .seat-badge { background: #1a1a1a; color: #fff; border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; display: flex; flex-direction: column; align-items: center; line-height: 1.4; min-width: 60px; }
+    .seat-badge.vip { background: #7c3aed; }
+    .seat-badge .seat-row-num { font-size: 10px; color: #aaa; font-weight: 500; }
+    .seat-badge .seat-num { font-size: 18px; font-weight: 900; }
+    .seat-badge .seat-type-label { font-size: 9px; color: #f5c518; font-weight: 700; margin-top: 2px; }
+    .seat-badge .seat-type-standard { font-size: 9px; color: #aaa; font-weight: 600; margin-top: 2px; }
+
+    .ticket-number-bar { background: #f5f5f5; border-radius: 8px; padding: 10px 14px; margin-top: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .ticket-num-text { font-size: 12px; color: #777; font-family: monospace; letter-spacing: 1px; font-weight: 600; }
+    .ticket-price { font-size: 17px; font-weight: 900; color: #e50914; }
+
+    .qr-img { width: 100px; height: 100px; border-radius: 8px; margin-bottom: 10px; }
+    .qr-label { font-size: 10px; color: #aaa; margin-bottom: 12px; text-align: center; }
+    .btn-pdf { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 12px; font-weight: 700; text-decoration: none; display: block; text-align: center; transition: background 0.2s; }
+    .btn-pdf:hover { background: #b0070f; color: #fff; }
+
+    .pagination .page-link { color: #e50914; border-color: #ddd; }
+    .pagination .page-item.active .page-link { background: #e50914; border-color: #e50914; color: #fff; }
+    .pagination .page-link:hover { background: #f5f5f5; color: #e50914; }
+
+    .empty-box { text-align: center; padding: 50px; background: #fff; border-radius: 16px; }
 </style>
 {% endblock %}
 
@@ -34,73 +71,215 @@
         <div class="d-flex align-items-center gap-4 flex-wrap">
             <div class="avatar">{{ user.username.0|upper }}</div>
             <div>
-                <h3 class="mb-0">{{ user.username }}</h3>
+                <h3 class="mb-0" style="color:#1a1a1a;">{{ user.username }}</h3>
                 <p class="text-secondary mb-0">{{ user.email }}</p>
-                {% if user.phone %}<p class="text-secondary mb-0">{{ user.phone }}</p>{% endif %}
             </div>
-            <div class="ms-auto">
-                <div class="row g-3">
-                    <div class="col-auto">
-                        <div class="stats-box">
-                            <div class="stats-number">{{ tickets.count }}</div>
-                            <div class="stats-label">Всего билетов</div>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <div class="stats-box">
-                            <div class="stats-number">{{ active_count }}</div>
-                            <div class="stats-label">Активных</div>
-                        </div>
-                    </div>
+            <div class="ms-auto d-flex gap-3">
+                <div class="stats-box">
+                    <div class="stats-number">{{ total_count }}</div>
+                    <div class="stats-label">Всего билетов</div>
+                </div>
+                <div class="stats-box">
+                    <div class="stats-number">{{ active_count }}</div>
+                    <div class="stats-label">Активных</div>
+                </div>
+                <div class="stats-box">
+                    <div class="stats-number">{{ used_count }}</div>
+                    <div class="stats-label">Использованных</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- БИЛЕТЫ -->
-    <h3 class="fw-bold mb-4">🎟️ Мои билеты</h3>
+    <!-- ТАБЫ -->
+    <div class="section-tabs">
+        <a href="?tab=active" class="section-tab {% if tab != 'used' %}active{% endif %}">
+            ✅ Активные <span class="tab-count">{{ active_count }}</span>
+        </a>
+        <a href="?tab=used" class="section-tab {% if tab == 'used' %}active{% endif %}">
+            ⬜ Использованные <span class="tab-count">{{ used_count }}</span>
+        </a>
+    </div>
 
-    {% for ticket in tickets %}
-    <div class="ticket-card {% if not ticket.is_active %}used{% endif %}">
-        <div class="ticket-header">
-            <div class="ticket-movie">🎬 {{ ticket.booking.session.movie.title }}</div>
-            {% if ticket.is_active %}
-            <span class="ticket-status-active">✅ Активен</span>
-            {% else %}
-            <span class="ticket-status-used">⬜ Использован</span>
-            {% endif %}
-        </div>
-        <div class="ticket-body">
-            <div>
-                <div class="ticket-info">📅 Дата: <span>{{ ticket.booking.session.date|date:"d.m.Y" }}</span></div>
-                <div class="ticket-info">🕐 Время: <span>{{ ticket.booking.session.start_time|time:"H:i" }}</span></div>
-                <div class="ticket-info">🏛 Зал: <span>{{ ticket.booking.session.hall.name }}</span></div>
-                <div class="ticket-info">💺 Места:
-                    <span>
-                        {% for seat in ticket.booking.seats.all %}
-                        Р{{ seat.row }}М{{ seat.number }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </span>
+    <!-- АКТИВНЫЕ БИЛЕТЫ -->
+    {% if tab != 'used' %}
+        {% for ticket in active_tickets %}
+        <div class="ticket-wrap">
+            <div class="ticket">
+                <div class="ticket-left">
+                    <span class="ticket-tag">✅ Активен</span>
+                    <div class="ticket-movie-title">{{ ticket.booking.session.movie.title }}</div>
+                    <div class="ticket-details">
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">📅 Дата</div>
+                            <div class="ticket-detail-value">{{ ticket.booking.session.date|date:"d.m.Y" }}</div>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">🕐 Время</div>
+                            <div class="ticket-detail-value">{{ ticket.booking.session.start_time|time:"H:i" }}</div>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">🏛 Зал</div>
+                            <div class="ticket-detail-value">{{ ticket.booking.session.hall.name }}</div>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">🎫 За 1 место</div>
+                            <div class="ticket-detail-value">{{ ticket.booking.session.price_standard }} сом</div>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">💰 Итого</div>
+                            <div class="ticket-detail-value" style="color:#e50914;">{{ ticket.booking.total_price }} сом</div>
+                        </div>
+                        <div class="ticket-detail-item" style="display:flex; align-items:center; justify-content:center;">
+                            <div style="font-size:32px; font-weight:900; color:#ccc;">× {{ ticket.booking.seats.count }}</div>
+                        </div>
+                    </div>
+                    <div class="seats-section">
+                        <div class="seats-title">💺 Места</div>
+                        <div class="seats-grid">
+                            {% for seat in ticket.booking.seats.all %}
+                            <div class="seat-badge {% if seat.seat_type == 'vip' %}vip{% endif %}">
+                                <span class="seat-row-num">Ряд {{ seat.row }}</span>
+                                <span class="seat-num">{{ seat.number }}</span>
+                                {% if seat.seat_type == 'vip' %}
+                                <span class="seat-type-label">⭐ VIP</span>
+                                {% else %}
+                                <span class="seat-type-standard">обычное</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="ticket-number-bar">
+                        <span class="ticket-num-text">№ {{ ticket.ticket_number }}</span>
+                        <span class="ticket-price">{{ ticket.booking.total_price }} сом</span>
+                    </div>
                 </div>
-                <div class="ticket-info">💰 Сумма: <span>{{ ticket.booking.total_price }} сом</span></div>
-                <div class="ticket-number mt-2">№ {{ ticket.ticket_number }}</div>
+                <div class="ticket-right">
+                    {% if ticket.qr_code %}
+                    <img src="{{ ticket.qr_code.url }}" alt="QR" class="qr-img">
+                    <div class="qr-label">Сканируй на входе</div>
+                    {% endif %}
+                    <a href="/tickets/{{ ticket.id }}/pdf/" class="btn-pdf">📥 PDF</a>
+                </div>
             </div>
-            <div class="text-center">
-                {% if ticket.qr_code %}
-                <img src="{{ ticket.qr_code.url }}" alt="QR" class="qr-code mb-2">
+        </div>
+        {% empty %}
+        <div class="empty-box">
+            <div style="font-size:60px;">🎟️</div>
+            <h4 class="mt-3 text-secondary">Нет активных билетов</h4>
+            <a href="/movies/" class="btn mt-3" style="background:#e50914; color:#fff; border-radius:8px; padding:10px 30px; text-decoration:none;">Выбрать фильм</a>
+        </div>
+        {% endfor %}
+
+        <!-- ПАГИНАЦИЯ АКТИВНЫХ -->
+        {% if active_tickets.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if active_tickets.has_previous %}
+                <li class="page-item"><a class="page-link" href="?tab=active&active_page={{ active_tickets.previous_page_number }}">←</a></li>
                 {% endif %}
-                <br>
-                <a href="/tickets/{{ ticket.id }}/pdf/" class="btn-pdf">📥 Скачать PDF</a>
+                {% for num in active_tickets.paginator.page_range %}
+                <li class="page-item {% if active_tickets.number == num %}active{% endif %}">
+                    <a class="page-link" href="?tab=active&active_page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if active_tickets.has_next %}
+                <li class="page-item"><a class="page-link" href="?tab=active&active_page={{ active_tickets.next_page_number }}">→</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+    <!-- ИСПОЛЬЗОВАННЫЕ БИЛЕТЫ -->
+        {% for ticket in used_tickets %}
+        <div class="ticket-wrap">
+            <div class="ticket used">
+                <div class="ticket-left">
+                    <span class="ticket-tag used-tag">⬜ Использован</span>
+                    <div class="ticket-movie-title">{{ ticket.booking.session.movie.title }}</div>
+                    <div class="ticket-details">
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">📅 Дата</div>
+                            <div class="ticket-detail-value">{{ ticket.booking.session.date|date:"d.m.Y" }}</div>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">🕐 Время</div>
+                            <div class="ticket-detail-value">{{ ticket.booking.session.start_time|time:"H:i" }}</div>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">🏛 Зал</div>
+                            <div class="ticket-detail-value">{{ ticket.booking.session.hall.name }}</div>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">🎫 За 1 место</div>
+                            <div class="ticket-detail-value">{{ ticket.booking.session.price_standard }} сом</div>
+                        </div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">💰 Итого</div>
+                            <div class="ticket-detail-value" style="color:#e50914;">{{ ticket.booking.total_price }} сом</div>
+                        </div>
+                        <div class="ticket-detail-item" style="display:flex; align-items:center; justify-content:center;">
+                            <div style="font-size:32px; font-weight:900; color:#ccc;">× {{ ticket.booking.seats.count }}</div>
+                        </div>
+                    </div>
+                    <div class="seats-section">
+                        <div class="seats-title">💺 Места</div>
+                        <div class="seats-grid">
+                            {% for seat in ticket.booking.seats.all %}
+                            <div class="seat-badge {% if seat.seat_type == 'vip' %}vip{% endif %}">
+                                <span class="seat-row-num">Ряд {{ seat.row }}</span>
+                                <span class="seat-num">{{ seat.number }}</span>
+                                {% if seat.seat_type == 'vip' %}
+                                <span class="seat-type-label">⭐ VIP</span>
+                                {% else %}
+                                <span class="seat-type-standard">обычное</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="ticket-number-bar">
+                        <span class="ticket-num-text">№ {{ ticket.ticket_number }}</span>
+                        <span class="ticket-price">{{ ticket.booking.total_price }} сом</span>
+                    </div>
+                </div>
+                <div class="ticket-right">
+                    {% if ticket.qr_code %}
+                    <img src="{{ ticket.qr_code.url }}" alt="QR" class="qr-img">
+                    <div class="qr-label">Сканируй на входе</div>
+                    {% endif %}
+                    <a href="/tickets/{{ ticket.id }}/pdf/" class="btn-pdf">📥 PDF</a>
+                </div>
             </div>
         </div>
-    </div>
-    {% empty %}
-    <div class="text-center py-5">
-        <div style="font-size:60px;">🎟️</div>
-        <h4 class="mt-3 text-secondary">У вас пока нет билетов</h4>
-        <a href="/movies/" class="btn btn-register mt-3" style="background:#e50914; color:#fff; border-radius:8px; padding:10px 30px;">Выбрать фильм</a>
-    </div>
-    {% endfor %}
+        {% empty %}
+        <div class="empty-box">
+            <div style="font-size:60px;">🎟️</div>
+            <h4 class="mt-3 text-secondary">Нет использованных билетов</h4>
+        </div>
+        {% endfor %}
+
+        <!-- ПАГИНАЦИЯ ИСПОЛЬЗОВАННЫХ -->
+        {% if used_tickets.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if used_tickets.has_previous %}
+                <li class="page-item"><a class="page-link" href="?tab=used&used_page={{ used_tickets.previous_page_number }}">←</a></li>
+                {% endif %}
+                {% for num in used_tickets.paginator.page_range %}
+                <li class="page-item {% if used_tickets.number == num %}active{% endif %}">
+                    <a class="page-link" href="?tab=used&used_page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if used_tickets.has_next %}
+                <li class="page-item"><a class="page-link" href="?tab=used&used_page={{ used_tickets.next_page_number }}">→</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% endif %}
 
 </div>
 {% endblock %}

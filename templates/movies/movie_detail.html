@@ -11,19 +11,13 @@
     .rating-big { font-size: 26px; font-weight: 900; color: #f5c518; }
     .movie-meta { color: #555; font-size: 14px; }
     .movie-meta span { color: #1a1a1a; font-weight: 600; }
-
-    .trailer-container { border-radius: 12px; overflow: hidden; }
-    .trailer-container iframe { width: 100%; height: 380px; border: none; }
-
     .section-header { font-size: 20px; font-weight: 800; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #e50914; display: inline-block; color: #1a1a1a; }
-
     .actor-card { background: #fff; border-radius: 10px; overflow: hidden; text-align: center; transition: transform 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
     .actor-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
     .actor-card img { width: 100%; height: 150px; object-fit: cover; }
     .actor-card .no-photo { width: 100%; height: 150px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 40px; }
     .actor-card .actor-name { font-size: 12px; font-weight: 700; color: #1a1a1a; padding: 8px 5px 2px; }
     .actor-card .actor-role { font-size: 11px; color: #888; padding-bottom: 8px; }
-
     .session-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 15px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .session-card:hover { border-color: #e50914; box-shadow: 0 5px 15px rgba(229,9,20,0.1); }
     .session-time { font-size: 26px; font-weight: 900; color: #e50914; }
@@ -32,18 +26,15 @@
     .btn-book { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; transition: background 0.2s; text-decoration: none; display: inline-block; }
     .btn-book:hover { background: #b0070f; color: #fff; }
     .btn-login-required { background: #f0f0f0; color: #888; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; text-decoration: none; display: inline-block; font-size: 13px; }
-
     .review-card { background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .review-user { font-weight: 700; color: #1a1a1a; }
     .review-date { font-size: 12px; color: #aaa; }
     .review-text { color: #555; margin-top: 8px; font-size: 14px; line-height: 1.6; }
-
     .review-form { background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #ddd; margin-bottom: 20px; }
     .form-control, .form-select { background: #f5f5f5; border: 1px solid #ddd; color: #1a1a1a; border-radius: 8px; }
     .form-control:focus, .form-select:focus { border-color: #e50914; box-shadow: none; background: #fff; }
     .btn-review { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 10px 25px; font-weight: 600; }
     .btn-review:hover { background: #b0070f; color: #fff; }
-
     .no-poster-big { width: 100%; max-width: 250px; height: 350px; background: #f0f0f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 80px; }
 </style>
 {% endblock %}
@@ -88,14 +79,31 @@
         <div class="col-lg-8">
 
             <!-- ТРЕЙЛЕР -->
+            {% if movie.trailer_url %}
+<div class="mb-4">
+    <div class="section-header">🎬 Трейлер</div>
+    <div class="mt-3">
+        <a href="{{ movie.trailer_url }}" target="_blank" style="display:block; position:relative; max-width:420px; border-radius:12px; overflow:hidden; text-decoration:none; box-shadow:0 8px 25px rgba(0,0,0,0.15);">
             {% if movie.trailer_embed %}
-            <div class="mb-4">
-                <div class="section-header">🎬 Трейлер</div>
-                <div class="trailer-container mt-3">
-                    <iframe src="{{ movie.trailer_embed }}" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-                </div>
+            <img src="https://img.youtube.com/vi/{{ movie.trailer_embed|slice:'30:' }}/hqdefault.jpg"
+                 style="width:100%; display:block;" alt="Трейлер {{ movie.title }}">
+            {% else %}
+            <div style="width:100%; height:220px; background:#1a1a1a; display:flex; align-items:center; justify-content:center;">
+                <span style="font-size:60px;">🎬</span>
             </div>
             {% endif %}
+            <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center;">
+                <div style="width:70px; height:70px; background:#e50914; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(229,9,20,0.5);">
+                    <div style="width:0; height:0; border-top:16px solid transparent; border-bottom:16px solid transparent; border-left:26px solid white; margin-left:6px;"></div>
+                </div>
+            </div>
+            <div style="position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.8)); padding:15px; color:white; font-weight:700; font-size:15px;">
+                ▶ Смотреть трейлер на YouTube
+            </div>
+        </a>
+    </div>
+</div>
+{% endif %}
 
             <!-- АКТЁРЫ -->
             {% if movie.movie_actors.all %}
@@ -122,7 +130,6 @@
             <!-- ОТЗЫВЫ -->
             <div class="mb-4">
                 <div class="section-header">💬 Отзывы</div>
-
                 {% if user.is_authenticated %}
                 <div class="review-form mt-3">
                     <form method="post" action="/movies/{{ movie.id }}/review/">
@@ -198,4 +205,5 @@
 
     </div>
 </div>
+
 {% endblock %}

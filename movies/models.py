@@ -1,6 +1,6 @@
 from django.db import models
-from django.db import models
 from users.models import User
+import re
 
 
 class Genre(models.Model):
@@ -51,6 +51,15 @@ class Movie(models.Model):
             return round(sum(r.rating for r in reviews) / reviews.count(), 1)
         return 0
 
+    @property
+    def trailer_embed(self):
+        if not self.trailer_url:
+            return None
+        match = re.search(r'(?:v=|youtu\.be/|embed/)([a-zA-Z0-9_-]{11})', self.trailer_url)
+        if match:
+            return f'https://www.youtube.com/embed/{match.group(1)}'
+        return None
+
 
 class MovieActor(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='movie_actors')
@@ -81,4 +90,3 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.user.username} — {self.movie.title} ({self.rating}⭐)'
-# Create your models here.

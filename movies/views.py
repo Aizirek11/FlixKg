@@ -221,10 +221,74 @@ def delete_session_view(request, pk):
 
 @staff_member_required
 def add_hall_view(request):
-    from bookings.models import Hall
+    from bookings.models import Hall, Seat
     if request.method == 'POST':
         name = request.POST.get('name')
         address = request.POST.get('address', '')
-        Hall.objects.create(name=name, address=address)
-        messages.success(request, f'Зал "{name}" добавлен!')
+        total_rows = int(request.POST.get('total_rows'))
+        total_seats = int(request.POST.get('total_seats'))
+        vip_rows = int(request.POST.get('vip_rows', 0))
+
+        hall = Hall.objects.create(
+            name=name,
+            address=address,
+            total_rows=total_rows,
+            total_seats=total_seats
+        )
+
+        # Автоматически создаём все места
+        for row in range(1, total_rows + 1):
+            for seat_num in range(1, total_seats + 1):
+                seat_type = 'vip' if row <= vip_rows else 'standard'
+                Seat.objects.create(
+                    hall=hall,
+                    row=row,
+                    number=seat_num,
+                    seat_type=seat_type
+                )
+
+        messages.success(request, f'Зал "{name}" добавлен с {total_rows * total_seats} местами!')
+    return redirect('/admin-panel/')
+
+@staff_member_required
+def edit_movie_view(request, pk):
+    movie = get_object_or_404(Movie, pk=pk)
+    genres = Genre.objects.all()
+    if request.method == 'POST':
+        movie.title = request.POST.get('title')
+        movie.description = request.POST.get('description')
+        movie.release_year = request.POST.get('release_year')
+        movie.duration = request.POST.get('duration')
+        movie.age_limit = request.POST.get('age_limit')
+        movie.trailer_url = request.POST.get('trailer_url', '')
+        genre_ids = request.POST.getlist('genre')
+        if request.FILES.get('poster'):
+            movie.poster = request.FILES.get('poster')
+        movie.save()
+        movie.genre.set(genre_ids)
+        messages.success(request, f'Фильм "{movie.title}" обновлён!')
+        return redirect('/admin-panel/')
+    return render(request, 'movies/edit_movie.html', {
+        'movie': movie,
+        'genres': genres,
+    })
+
+
+@staff_member_required
+def add_movie_actor_view(request):
+    from .models import MovieActor
+    if request.method == 'POST':
+        movie_id = request.POST.get('movie')
+        actor_id = request.POST.get('actor')
+        role = request.POST.get('role', '')
+        MovieActor.objects.create(movie_id=movie_id, actor_id=actor_id, role=role)
+        messages.success(request, 'Актёр добавлен в фильм!')
+    return redirect('/admin-panel/')
+
+@staff_member_required
+def delete_movie_actor_view(request, pk):
+    from .models import MovieActor
+    ma = get_object_or_404(MovieActor, pk=pk)
+    ma.delete()
+    messages.success(request, 'Актёр удалён из фильма!')
     return redirect('/admin-panel/')
