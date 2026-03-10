@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load dict_extras %}
 {% block title %}Личный кабинет — FlixKG{% endblock %}
 
 {% block extra_css %}
@@ -11,7 +12,7 @@
     .stats-number { font-size: 28px; font-weight: 900; color: #e50914; }
     .stats-label { font-size: 12px; color: #555; margin-top: 3px; font-weight: 600; }
 
-    .section-tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+    .section-tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
     .section-tab { background: #fff; border: 2px solid #ddd; color: #555; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 700; transition: all 0.2s; text-decoration: none; }
     .section-tab:hover { border-color: #e50914; color: #e50914; }
     .section-tab.active { background: #e50914; border-color: #e50914; color: #fff; }
@@ -60,6 +61,30 @@
     .pagination .page-link:hover { background: #f5f5f5; color: #e50914; }
 
     .empty-box { text-align: center; padding: 50px; background: #fff; border-radius: 16px; }
+
+    .notif-list { display: flex; flex-direction: column; gap: 12px; }
+    .notif-item { background: #fff; border-radius: 14px; padding: 18px 20px; display: flex; align-items: flex-start; gap: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border-left: 4px solid #e50914; transition: transform 0.15s; position: relative; }
+    .notif-item:hover { transform: translateX(4px); }
+    .notif-item.read { border-left-color: #ddd; opacity: 0.75; }
+    .notif-icon { width: 42px; height: 42px; background: #fff0f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .notif-item.read .notif-icon { background: #f5f5f5; }
+    .notif-body { flex: 1; }
+    .notif-message { font-size: 14px; color: #1a1a1a; font-weight: 600; line-height: 1.5; margin-bottom: 5px; }
+    .notif-item.read .notif-message { font-weight: 500; color: #555; }
+    .notif-time { font-size: 12px; color: #aaa; }
+    .notif-unread-dot { width: 8px; height: 8px; background: #e50914; border-radius: 50%; position: absolute; top: 18px; right: 18px; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .notif-header-title { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+    .btn-mark-all { background: #f5f5f5; border: none; color: #555; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .btn-mark-all:hover { background: #eee; color: #333; }
+
+    .notif-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .btn-confirm-notif { background: #28a745; color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
+    .btn-confirm-notif:hover { background: #1e7e34; color: #fff; }
+    .btn-reject-notif { background: transparent; border: 1px solid #e50914; color: #e50914; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-reject-notif:hover { background: #e50914; color: #fff; }
+
+    .discount-badge { background: #28a745; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 4px; font-weight: 700; }
 </style>
 {% endblock %}
 
@@ -93,16 +118,20 @@
 
     <!-- ТАБЫ -->
     <div class="section-tabs">
-        <a href="?tab=active" class="section-tab {% if tab != 'used' %}active{% endif %}">
+        <a href="?tab=active" class="section-tab {% if tab == 'active' or tab == '' %}active{% endif %}">
             ✅ Активные <span class="tab-count">{{ active_count }}</span>
         </a>
         <a href="?tab=used" class="section-tab {% if tab == 'used' %}active{% endif %}">
             ⬜ Использованные <span class="tab-count">{{ used_count }}</span>
         </a>
+        <a href="?tab=notifications" class="section-tab {% if tab == 'notifications' %}active{% endif %}">
+            🔔 Уведомления
+            {% if unread_count %}<span class="tab-count">{{ unread_count }}</span>{% endif %}
+        </a>
     </div>
 
     <!-- АКТИВНЫЕ БИЛЕТЫ -->
-    {% if tab != 'used' %}
+    {% if tab == 'active' or tab == '' %}
         {% for ticket in active_tickets %}
         <div class="ticket-wrap">
             <div class="ticket">
@@ -128,7 +157,17 @@
                         </div>
                         <div class="ticket-detail-item">
                             <div class="ticket-detail-label">💰 Итого</div>
-                            <div class="ticket-detail-value" style="color:#e50914;">{{ ticket.booking.total_price }} сом</div>
+                            <div class="ticket-detail-value">
+                                {% with discount_map|get_item:ticket.booking.id as disc %}
+                                {% if disc %}
+                                    <span style="text-decoration:line-through; color:#999; font-size:13px;">{{ disc.original_amount }} сом</span><br>
+                                    <span style="color:#e50914;">{{ disc.final_amount }} сом</span>
+                                    <span class="discount-badge">-20%</span>
+                                {% else %}
+                                    <span style="color:#e50914;">{{ ticket.booking.total_price }} сом</span>
+                                {% endif %}
+                                {% endwith %}
+                            </div>
                         </div>
                         <div class="ticket-detail-item" style="display:flex; align-items:center; justify-content:center;">
                             <div style="font-size:32px; font-weight:900; color:#ccc;">× {{ ticket.booking.seats.count }}</div>
@@ -152,7 +191,9 @@
                     </div>
                     <div class="ticket-number-bar">
                         <span class="ticket-num-text">№ {{ ticket.ticket_number }}</span>
-                        <span class="ticket-price">{{ ticket.booking.total_price }} сом</span>
+                        {% with discount_map|get_item:ticket.booking.id as disc %}
+                        <span class="ticket-price">{% if disc %}{{ disc.final_amount }}{% else %}{{ ticket.booking.total_price }}{% endif %} сом</span>
+                        {% endwith %}
                     </div>
                 </div>
                 <div class="ticket-right">
@@ -172,7 +213,6 @@
         </div>
         {% endfor %}
 
-        <!-- ПАГИНАЦИЯ АКТИВНЫХ -->
         {% if active_tickets.has_other_pages %}
         <nav class="mt-4">
             <ul class="pagination justify-content-center">
@@ -191,7 +231,7 @@
         </nav>
         {% endif %}
 
-    {% else %}
+    {% elif tab == 'used' %}
     <!-- ИСПОЛЬЗОВАННЫЕ БИЛЕТЫ -->
         {% for ticket in used_tickets %}
         <div class="ticket-wrap">
@@ -218,7 +258,17 @@
                         </div>
                         <div class="ticket-detail-item">
                             <div class="ticket-detail-label">💰 Итого</div>
-                            <div class="ticket-detail-value" style="color:#e50914;">{{ ticket.booking.total_price }} сом</div>
+                            <div class="ticket-detail-value">
+                                {% with discount_map|get_item:ticket.booking.id as disc %}
+                                {% if disc %}
+                                    <span style="text-decoration:line-through; color:#999; font-size:13px;">{{ disc.original_amount }} сом</span><br>
+                                    <span style="color:#e50914;">{{ disc.final_amount }} сом</span>
+                                    <span class="discount-badge">-20%</span>
+                                {% else %}
+                                    <span style="color:#e50914;">{{ ticket.booking.total_price }} сом</span>
+                                {% endif %}
+                                {% endwith %}
+                            </div>
                         </div>
                         <div class="ticket-detail-item" style="display:flex; align-items:center; justify-content:center;">
                             <div style="font-size:32px; font-weight:900; color:#ccc;">× {{ ticket.booking.seats.count }}</div>
@@ -242,7 +292,9 @@
                     </div>
                     <div class="ticket-number-bar">
                         <span class="ticket-num-text">№ {{ ticket.ticket_number }}</span>
-                        <span class="ticket-price">{{ ticket.booking.total_price }} сом</span>
+                        {% with discount_map|get_item:ticket.booking.id as disc %}
+                        <span class="ticket-price">{% if disc %}{{ disc.final_amount }}{% else %}{{ ticket.booking.total_price }}{% endif %} сом</span>
+                        {% endwith %}
                     </div>
                 </div>
                 <div class="ticket-right">
@@ -261,7 +313,6 @@
         </div>
         {% endfor %}
 
-        <!-- ПАГИНАЦИЯ ИСПОЛЬЗОВАННЫХ -->
         {% if used_tickets.has_other_pages %}
         <nav class="mt-4">
             <ul class="pagination justify-content-center">
@@ -279,7 +330,65 @@
             </ul>
         </nav>
         {% endif %}
+
+    {% elif tab == 'notifications' %}
+    <!-- УВЕДОМЛЕНИЯ -->
+    <div style="background:#fff; border-radius:16px; padding:25px; box-shadow:0 2px 15px rgba(0,0,0,0.08);">
+        <div class="notif-header">
+            <div class="notif-header-title">🔔 Уведомления</div>
+            {% if notifications %}
+            <a href="?tab=notifications&mark_all=1" class="btn-mark-all">✓ Прочитать все</a>
+            {% endif %}
+        </div>
+
+        <div class="notif-list">
+            {% for notif in notifications %}
+            <div class="notif-item {% if not notif.is_read %}unread{% else %}read{% endif %}">
+                <div class="notif-icon">
+                    {% if not notif.is_read %}🔔{% else %}🔕{% endif %}
+                </div>
+                <div class="notif-body">
+                    <div class="notif-message">{{ notif.message }}</div>
+                    <div class="notif-time">{{ notif.created_at|date:"d.m.Y" }} в {{ notif.created_at|time:"H:i" }}</div>
+                    {% if user.is_staff and 'запрашивает статус пенсионера' in notif.message %}
+                    <div class="notif-actions">
+                        {% for pending_user in pensioners_pending %}
+                        {% if pending_user.username in notif.message %}
+                        <form method="post" action="/admin-panel/pensioner/{{ pending_user.id }}/confirm/" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-confirm-notif">✅ Подтвердить</button>
+                        </form>
+                        <form method="post" action="/admin-panel/pensioner/{{ pending_user.id }}/reject/" style="display:inline;" onsubmit="return confirm('Отклонить заявку?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-reject-notif">✕ Отклонить</button>
+                        </form>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% if not notif.is_read %}
+                <div class="notif-unread-dot"></div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-box">
+                <div style="font-size:60px;">🔕</div>
+                <h4 class="mt-3 text-secondary">Нет уведомлений</h4>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
     {% endif %}
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    {% if tab == 'notifications' %}
+    const badge = document.querySelector('.notif-badge');
+    if (badge) badge.remove();
+    {% endif %}
+</script>
 {% endblock %}

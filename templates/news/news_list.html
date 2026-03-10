@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Новости — FlixKG{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4" style="font-weight:800;">ЖАҢЫЛЫКТАР</h2>
+    <div class="row g-4">
+        {% for item in news %}
+        <div class="col-md-4">
+            <a href="/news/{{ item.pk }}/" class="text-decoration-none">
+                <div style="background:#1a1a1a; border-radius:12px; overflow:hidden; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}" style="width:100%; height:200px; object-fit:cover;">
+                    {% else %}
+                    <div style="width:100%; height:200px; background:#2a2a2a; display:flex; align-items:center; justify-content:center; font-size:48px;">🎬</div>
+                    {% endif %}
+                    <div class="p-3">
+                        <p style="color:#e50914; font-size:12px; margin-bottom:6px;">{{ item.created_at|date:"j-F, Y" }}</p>
+                        <h5 style="color:#fff; font-weight:700;">{{ item.title }}</h5>
+                        <p style="color:#aaa; font-size:13px;">{{ item.content|truncatechars:100 }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <p style="color:#aaa;">Новостей пока нет.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

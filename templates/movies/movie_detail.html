@@ -4,38 +4,40 @@
 
 {% block extra_css %}
 <style>
-    .movie-hero { background: #fff; padding: 40px 0; border-bottom: 1px solid #ddd; }
-    .movie-poster { border-radius: 12px; width: 100%; max-width: 250px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-    .movie-title { font-size: 36px; font-weight: 900; color: #1a1a1a; }
-    .badge-genre { background: #f0f0f0; border: 1px solid #ddd; color: #555; padding: 5px 12px; border-radius: 20px; font-size: 12px; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+    .movie-hero { background: #1a1a1a; padding: 40px 0; border-bottom: 1px solid #333; }
+    .movie-poster { border-radius: 12px; width: 100%; max-width: 250px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .movie-title { font-size: 36px; font-weight: 900; color: #fff; }
+    .badge-genre { background: #2a2a2a; border: 1px solid #444; color: #ccc; padding: 5px 12px; border-radius: 20px; font-size: 12px; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
     .rating-big { font-size: 26px; font-weight: 900; color: #f5c518; }
-    .movie-meta { color: #555; font-size: 14px; }
-    .movie-meta span { color: #1a1a1a; font-weight: 600; }
-    .section-header { font-size: 20px; font-weight: 800; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #e50914; display: inline-block; color: #1a1a1a; }
-    .actor-card { background: #fff; border-radius: 10px; overflow: hidden; text-align: center; transition: transform 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-    .actor-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
-    .actor-card img { width: 100%; height: 150px; object-fit: cover; }
-    .actor-card .no-photo { width: 100%; height: 150px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 40px; }
-    .actor-card .actor-name { font-size: 12px; font-weight: 700; color: #1a1a1a; padding: 8px 5px 2px; }
-    .actor-card .actor-role { font-size: 11px; color: #888; padding-bottom: 8px; }
-    .session-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 15px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .session-card:hover { border-color: #e50914; box-shadow: 0 5px 15px rgba(229,9,20,0.1); }
+    .movie-meta { color: #aaa; font-size: 14px; }
+    .movie-meta span { color: #fff; font-weight: 600; }
+    .section-header { font-size: 20px; font-weight: 800; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #e50914; display: inline-block; color: #fff; }
+    .actor-card { background: #1a1a1a; border-radius: 12px; text-align: center; transition: transform 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.3); padding: 25px 15px 20px; }
+    .actor-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+    .actor-card img { width: 130px; height: 130px; object-fit: cover; border-radius: 50%; border: 3px solid #e50914; display: block; margin: 0 auto 12px; }
+    .actor-card .no-photo { width: 130px; height: 130px; background: #2a2a2a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 50px; margin: 0 auto 12px; border: 3px solid #333; }
+    .actor-card .actor-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 5px; line-height: 1.4; }
+    .actor-card .actor-role { font-size: 12px; color: #888; }
+    .session-card { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 15px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; }
+    .session-card:hover { border-color: #e50914; box-shadow: 0 5px 15px rgba(229,9,20,0.15); }
     .session-time { font-size: 26px; font-weight: 900; color: #e50914; }
     .session-info { color: #888; font-size: 13px; }
-    .price { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+    .price { font-size: 16px; font-weight: 700; color: #fff; }
     .btn-book { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; transition: background 0.2s; text-decoration: none; display: inline-block; }
     .btn-book:hover { background: #b0070f; color: #fff; }
-    .btn-login-required { background: #f0f0f0; color: #888; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; text-decoration: none; display: inline-block; font-size: 13px; }
-    .review-card { background: #fff; border-radius: 10px; padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .review-user { font-weight: 700; color: #1a1a1a; }
-    .review-date { font-size: 12px; color: #aaa; }
-    .review-text { color: #555; margin-top: 8px; font-size: 14px; line-height: 1.6; }
-    .review-form { background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #ddd; margin-bottom: 20px; }
-    .form-control, .form-select { background: #f5f5f5; border: 1px solid #ddd; color: #1a1a1a; border-radius: 8px; }
-    .form-control:focus, .form-select:focus { border-color: #e50914; box-shadow: none; background: #fff; }
+    .btn-login-required { background: #2a2a2a; color: #888; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 700; text-decoration: none; display: inline-block; font-size: 13px; }
+    .review-card { background: #1a1a1a; border-radius: 10px; padding: 20px; margin-bottom: 15px; border: 1px solid #333; }
+    .review-user { font-weight: 700; color: #fff; }
+    .review-date { font-size: 12px; color: #666; }
+    .review-text { color: #aaa; margin-top: 8px; font-size: 14px; line-height: 1.6; }
+    .review-form { background: #1a1a1a; border-radius: 10px; padding: 20px; border: 1px solid #333; margin-bottom: 20px; }
+    .form-control, .form-select { background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 8px; }
+    .form-control:focus, .form-select:focus { border-color: #e50914; box-shadow: none; background: #2a2a2a; color: #fff; }
+    .form-control::placeholder { color: #666; }
     .btn-review { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 10px 25px; font-weight: 600; }
     .btn-review:hover { background: #b0070f; color: #fff; }
-    .no-poster-big { width: 100%; max-width: 250px; height: 350px; background: #f0f0f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 80px; }
+    .no-poster-big { width: 100%; max-width: 250px; height: 350px; background: #2a2a2a; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 80px; }
+    .form-select option { background: #2a2a2a; color: #fff; }
 </style>
 {% endblock %}
 
@@ -68,7 +70,7 @@
                     <div>⏱ Длительность: <span>{{ movie.duration }} мин</span></div>
                     <div>🔞 Рейтинг: <span>{{ movie.age_limit }}</span></div>
                 </div>
-                <p class="text-secondary" style="max-width:600px; line-height:1.7;">{{ movie.description }}</p>
+                <p style="color:#ccc; max-width:600px; line-height:1.7;">{{ movie.description }}</p>
             </div>
         </div>
     </div>
@@ -80,38 +82,38 @@
 
             <!-- ТРЕЙЛЕР -->
             {% if movie.trailer_url %}
-<div class="mb-4">
-    <div class="section-header">🎬 Трейлер</div>
-    <div class="mt-3">
-        <a href="{{ movie.trailer_url }}" target="_blank" style="display:block; position:relative; max-width:420px; border-radius:12px; overflow:hidden; text-decoration:none; box-shadow:0 8px 25px rgba(0,0,0,0.15);">
-            {% if movie.trailer_embed %}
-            <img src="https://img.youtube.com/vi/{{ movie.trailer_embed|slice:'30:' }}/hqdefault.jpg"
-                 style="width:100%; display:block;" alt="Трейлер {{ movie.title }}">
-            {% else %}
-            <div style="width:100%; height:220px; background:#1a1a1a; display:flex; align-items:center; justify-content:center;">
-                <span style="font-size:60px;">🎬</span>
-            </div>
-            {% endif %}
-            <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center;">
-                <div style="width:70px; height:70px; background:#e50914; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(229,9,20,0.5);">
-                    <div style="width:0; height:0; border-top:16px solid transparent; border-bottom:16px solid transparent; border-left:26px solid white; margin-left:6px;"></div>
+            <div class="mb-5">
+                <div class="section-header">🎬 Трейлер</div>
+                <div class="mt-3">
+                    <a href="{{ movie.trailer_url }}" target="_blank" style="display:block; position:relative; max-width:420px; border-radius:12px; overflow:hidden; text-decoration:none; box-shadow:0 8px 25px rgba(0,0,0,0.5);">
+                        {% if movie.trailer_embed %}
+                        <img src="https://img.youtube.com/vi/{{ movie.trailer_embed|slice:'30:' }}/hqdefault.jpg"
+                             style="width:100%; display:block;" alt="Трейлер {{ movie.title }}">
+                        {% else %}
+                        <div style="width:100%; height:220px; background:#1a1a1a; display:flex; align-items:center; justify-content:center;">
+                            <span style="font-size:60px;">🎬</span>
+                        </div>
+                        {% endif %}
+                        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center;">
+                            <div style="width:70px; height:70px; background:#e50914; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(229,9,20,0.5);">
+                                <div style="width:0; height:0; border-top:16px solid transparent; border-bottom:16px solid transparent; border-left:26px solid white; margin-left:6px;"></div>
+                            </div>
+                        </div>
+                        <div style="position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.8)); padding:15px; color:white; font-weight:700; font-size:15px;">
+                            ▶ Смотреть трейлер на YouTube
+                        </div>
+                    </a>
                 </div>
             </div>
-            <div style="position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.8)); padding:15px; color:white; font-weight:700; font-size:15px;">
-                ▶ Смотреть трейлер на YouTube
-            </div>
-        </a>
-    </div>
-</div>
-{% endif %}
+            {% endif %}
 
             <!-- АКТЁРЫ -->
             {% if movie.movie_actors.all %}
-            <div class="mb-4">
+            <div class="mb-5">
                 <div class="section-header">🎭 Актёры</div>
-                <div class="row g-3 mt-1">
+                <div class="row g-4 mt-1">
                     {% for movie_actor in movie.movie_actors.all %}
-                    <div class="col-4 col-md-3 col-lg-2">
+                    <div class="col-6 col-md-4 col-lg-3">
                         <div class="actor-card">
                             {% if movie_actor.actor.photo %}
                             <img src="{{ movie_actor.actor.photo.url }}" alt="{{ movie_actor.actor.name }}">
@@ -135,7 +137,7 @@
                     <form method="post" action="/movies/{{ movie.id }}/review/">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="fw-600 mb-2" style="color:#555; font-size:14px;">Ваша оценка:</label>
+                            <label class="fw-bold mb-2" style="color:#ccc; font-size:14px;">Ваша оценка:</label>
                             <select name="rating" class="form-select" style="width:auto;">
                                 <option value="5">⭐⭐⭐⭐⭐ Отлично</option>
                                 <option value="4">⭐⭐⭐⭐ Хорошо</option>
@@ -151,7 +153,7 @@
                     </form>
                 </div>
                 {% else %}
-                <div class="alert mt-3" style="background:#fff3cd; border:1px solid #ffc107; color:#856404; border-radius:10px;">
+                <div class="alert mt-3" style="background:#2a1a00; border:1px solid #664400; color:#ffaa44; border-radius:10px;">
                     <a href="/login/" style="color:#e50914; font-weight:700;">Войдите</a>, чтобы оставить отзыв
                 </div>
                 {% endif %}
@@ -196,7 +198,7 @@
                     </div>
                 </div>
                 {% empty %}
-                <div class="text-center py-4" style="background:#fff; border-radius:10px; border:1px solid #ddd;">
+                <div class="text-center py-4" style="background:#1a1a1a; border-radius:10px; border:1px solid #333;">
                     <p class="text-secondary mb-0">Сеансов пока нет</p>
                 </div>
                 {% endfor %}

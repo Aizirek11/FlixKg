@@ -3,56 +3,71 @@
 
 {% block extra_css %}
 <style>
-    .admin-card { background: #fff; border-radius: 12px; padding: 30px; margin-bottom: 25px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
-    .admin-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; color: #1a1a1a; border-left: 4px solid #e50914; padding-left: 15px; }
-    .form-label { font-weight: 600; color: #555; font-size: 13px; }
-    .form-control, .form-select { background: #f5f5f5; border: 1px solid #ddd; color: #1a1a1a; border-radius: 8px; padding: 10px 15px; }
-    .form-control:focus, .form-select:focus { border-color: #e50914; box-shadow: none; background: #fff; }
-    .form-control.is-invalid { border-color: #e50914; background: #fff5f5; }
+    .admin-card { background: #1a1a1a; border-radius: 12px; padding: 30px; margin-bottom: 25px; box-shadow: 0 2px 15px rgba(0,0,0,0.3); border: 1px solid #2a2a2a; }
+    .admin-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; color: #fff; border-left: 4px solid #e50914; padding-left: 15px; }
+    .form-label { font-weight: 600; color: #ccc; font-size: 13px; }
+    .form-control, .form-select { background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 8px; padding: 10px 15px; }
+    .form-control:focus, .form-select:focus { border-color: #e50914; box-shadow: none; background: #2a2a2a; color: #fff; }
+    .form-control::placeholder { color: #666; }
+    .form-control.is-invalid { border-color: #e50914; background: #2a1a1a; }
+    .form-select option { background: #2a2a2a; color: #fff; }
     .invalid-feedback { color: #e50914; font-size: 12px; margin-top: 4px; display: none; }
     .form-control.is-invalid ~ .invalid-feedback,
     .is-invalid ~ .invalid-feedback { display: block; }
-
-    .btn-submit { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 12px 30px; font-weight: 700; font-size: 15px; }
+    .btn-submit { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 12px 30px; font-weight: 700; font-size: 15px; cursor: pointer; }
     .btn-submit:hover { background: #b0070f; color: #fff; }
-    .movie-row { background: #f9f9f9; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+    .movie-row { background: #2a2a2a; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; color: #fff; }
     .movie-row img { width: 50px; height: 70px; object-fit: cover; border-radius: 5px; }
-    .movie-row .no-img { width: 50px; height: 70px; background: #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .btn-delete { background: transparent; border: 1px solid #e50914; color: #e50914; border-radius: 6px; padding: 5px 12px; font-size: 12px; }
+    .movie-row .no-img { width: 50px; height: 70px; background: #333; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .btn-delete { background: transparent; border: 1px solid #e50914; color: #e50914; border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
     .btn-delete:hover { background: #e50914; color: #fff; }
-    .btn-edit { background: transparent; border: 1px solid #555; color: #555; border-radius: 6px; padding: 5px 12px; font-size: 12px; margin-right: 5px; }
-    .btn-edit:hover { background: #555; color: #fff; }
-    .tab-btn { background: #f0f0f0; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; color: #555; margin-right: 10px; margin-bottom: 20px; }
+    .btn-edit { background: transparent; border: 1px solid #666; color: #ccc; border-radius: 6px; padding: 5px 12px; font-size: 12px; margin-right: 5px; text-decoration: none; display: inline-block; }
+    .btn-edit:hover { background: #666; color: #fff; }
+    .tab-btn { background: #2a2a2a; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; color: #aaa; margin-right: 10px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s; }
+    .tab-btn:hover { background: #333; color: #fff; }
     .tab-btn.active { background: #e50914; color: #fff; }
-
-    /* ЖАНР DROPDOWN */
     .genre-dropdown { position: relative; }
-    .genre-trigger { background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; padding: 10px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #555; user-select: none; }
+    .genre-trigger { background: #2a2a2a; border: 1px solid #444; border-radius: 8px; padding: 10px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #ccc; user-select: none; }
     .genre-trigger:hover { border-color: #e50914; }
-    .genre-trigger.is-invalid { border-color: #e50914; background: #fff5f5; }
-    .genre-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.12); z-index: 100; max-height: 200px; overflow-y: auto; display: none; margin-top: 4px; }
+    .genre-trigger.is-invalid { border-color: #e50914; background: #2a1a1a; }
+    .genre-list { position: absolute; top: 100%; left: 0; right: 0; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); z-index: 100; max-height: 200px; overflow-y: auto; display: none; margin-top: 4px; }
     .genre-list.open { display: block; }
-    .genre-item { padding: 10px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; }
-    .genre-item:hover { background: #f5f5f5; }
+    .genre-item { padding: 10px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; color: #ccc; }
+    .genre-item:hover { background: #333; }
     .genre-item input[type=checkbox] { accent-color: #e50914; width: 16px; height: 16px; }
     .genre-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; min-height: 10px; }
     .genre-tag { background: #e50914; color: #fff; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
-
-    /* ПАГИНАЦИЯ */
-    .pagination .page-link { color: #e50914; border-color: #ddd; }
+    .pagination .page-link { color: #e50914; border-color: #444; background: #2a2a2a; }
     .pagination .page-item.active .page-link { background: #e50914; border-color: #e50914; color: #fff; }
-    .pagination .page-link:hover { background: #f5f5f5; color: #e50914; }
+    .pagination .page-link:hover { background: #333; color: #e50914; }
+    .text-secondary { color: #888 !important; }
+    .fw-bold { color: #fff; }
+    .form-check-label { color: #ccc; }
+    .form-check-input { accent-color: #e50914; }
+    .pensioner-row { background: #2a2a2a; border-radius: 8px; padding: 18px 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #ffc107; }
+    .pensioner-row.confirmed { border-left-color: #28a745; }
+    .btn-confirm { background: #28a745; color: #fff; border: none; border-radius: 6px; padding: 8px 18px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .btn-confirm:hover { background: #1e7e34; }
+    .promo-badge { background: #0d2b0d; color: #28a745; padding: 4px 12px; border-radius: 6px; font-family: monospace; font-size: 14px; font-weight: 700; border: 1px solid #28a745; }
+    .pending-count { background: #ffc107; color: #333; border-radius: 20px; padding: 2px 8px; font-size: 11px; font-weight: 700; margin-left: 5px; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-4 pb-5">
-    <h2 class="fw-bold mb-4">⚙️ Панель управления</h2>
+    <h2 class="fw-bold mb-4" style="color:#fff;">⚙️ Панель управления</h2>
 
     <div>
         <button class="tab-btn active" onclick="showTab('movies', event)">🎬 Фильмы</button>
         <button class="tab-btn" onclick="showTab('actors', event)">🎭 Актёры</button>
         <button class="tab-btn" onclick="showTab('sessions', event)">📅 Сеансы</button>
+        <button class="tab-btn" onclick="showTab('news', event)">📰 Новости</button>
+        <button class="tab-btn" onclick="showTab('pensioners', event)">
+            👴 Пенсионеры
+            {% if pensioners_pending.count > 0 %}
+            <span class="pending-count">{{ pensioners_pending.count }}</span>
+            {% endif %}
+        </button>
     </div>
 
     <!-- ФИЛЬМЫ -->
@@ -142,15 +157,16 @@
                     </div>
                 </div>
                 <div>
-                    <a href="/admin-panel/movie/{{ movie.id }}/edit/" class="btn btn-edit">✏️ Изменить</a>
-                    <a href="/admin-panel/movie/{{ movie.id }}/delete/" class="btn btn-delete" onclick="return confirm('Удалить фильм?')">🗑️ Удалить</a>
+                    <a href="/admin-panel/movie/{{ movie.id }}/edit/" class="btn-edit">✏️ Изменить</a>
+                    <form method="POST" action="/admin-panel/movie/{{ movie.id }}/delete/" style="display:inline;" onsubmit="return confirm('Удалить фильм?')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-delete">🗑️ Удалить</button>
+                    </form>
                 </div>
             </div>
             {% empty %}
             <p class="text-secondary">Фильмов пока нет</p>
             {% endfor %}
-
-            <!-- ПАГИНАЦИЯ ФИЛЬМОВ -->
             {% if movies.has_other_pages %}
             <nav class="mt-4">
                 <ul class="pagination justify-content-center">
@@ -240,14 +256,17 @@
                             {% if ma.actor.photo %}
                             <img src="{{ ma.actor.photo.url }}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
                             {% else %}
-                            <div style="width:40px;height:40px;border-radius:50%;background:#ddd;display:flex;align-items:center;justify-content:center;">👤</div>
+                            <div style="width:40px;height:40px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;">👤</div>
                             {% endif %}
                             <div>
                                 <div class="fw-bold" style="font-size:14px;">{{ ma.actor.name }}</div>
                                 {% if ma.role %}<div class="text-secondary" style="font-size:12px;">{{ ma.role }}</div>{% endif %}
                             </div>
                         </div>
-                        <a href="/admin-panel/movie-actor/{{ ma.id }}/delete/" class="btn btn-delete" onclick="return confirm('Убрать актёра из фильма?')">✕ Убрать</a>
+                        <form method="POST" action="/admin-panel/movie-actor/{{ ma.id }}/delete/" style="display:inline;" onsubmit="return confirm('Убрать актёра из фильма?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete">✕ Убрать</button>
+                        </form>
                     </div>
                     {% endfor %}
                 </div>
@@ -269,7 +288,10 @@
                     {% endif %}
                     <div class="fw-bold">{{ actor.name }}</div>
                 </div>
-                <a href="/admin-panel/actor/{{ actor.id }}/delete/" class="btn btn-delete" onclick="return confirm('Удалить актёра?')">🗑️ Удалить</a>
+                <form method="POST" action="/admin-panel/actor/{{ actor.id }}/delete/" style="display:inline;" onsubmit="return confirm('Удалить актёра?')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete">🗑️ Удалить</button>
+                </form>
             </div>
             {% empty %}
             <p class="text-secondary">Актёров пока нет</p>
@@ -303,11 +325,12 @@
                     <div class="col-md-4">
                         <label class="form-label">Дата *</label>
                         <input type="date" name="date" id="session_date" class="form-control" required>
-                        <div class="invalid-feedback">Выберите дату сеанса</div>
+                        <div class="invalid-feedback">Нельзя выбрать прошедшую дату</div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Время начала *</label>
-                        <input type="time" name="start_time" class="form-control" required>
+                        <input type="time" name="start_time" id="start_time" class="form-control" required>
+                        <div class="invalid-feedback">Введите время сеанса</div>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Цена обычного (сом)</label>
@@ -368,7 +391,10 @@
                         {% if hall.address %} • 📍 {{ hall.address }}{% endif %}
                     </div>
                 </div>
-                <a href="/admin-panel/hall/{{ hall.id }}/delete/" class="btn btn-delete" onclick="return confirm('Удалить зал?')">🗑️ Удалить</a>
+                <form method="POST" action="/admin-panel/hall/{{ hall.id }}/delete/" style="display:inline;" onsubmit="return confirm('Удалить зал?')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete">🗑️ Удалить</button>
+                </form>
             </div>
             {% empty %}
             <p class="text-secondary">Залов пока нет</p>
@@ -388,10 +414,136 @@
                         Обычное: {{ session.price_standard }} сом • VIP: {{ session.price_vip }} сом
                     </div>
                 </div>
-                <a href="/admin-panel/session/{{ session.id }}/delete/" class="btn btn-delete" onclick="return confirm('Удалить сеанс?')">🗑️ Удалить</a>
+                <form method="POST" action="/admin-panel/session/{{ session.id }}/delete/" style="display:inline;" onsubmit="return confirm('Удалить сеанс?')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete">🗑️ Удалить</button>
+                </form>
             </div>
             {% empty %}
             <p class="text-secondary">Сеансов пока нет</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- НОВОСТИ -->
+    <div id="tab-news" style="display:none;">
+        <div class="admin-card">
+            <div class="admin-title">Добавить новость</div>
+            <form method="post" action="/admin-panel/news/add/" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Заголовок *</label>
+                        <input type="text" name="title" class="form-control" placeholder="Заголовок новости..." required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Содержание *</label>
+                        <textarea name="content" class="form-control" rows="5" placeholder="Текст новости..." required></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Изображение</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            <input type="checkbox" name="is_published" class="form-check-input" id="is_published" checked>
+                            <label class="form-check-label fw-bold" for="is_published" style="color:#ccc;">Опубликовать сразу</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit mt-4">Добавить новость</button>
+            </form>
+        </div>
+
+        <div class="admin-card">
+            <div class="admin-title">Все новости ({{ news_list.count }})</div>
+            {% for item in news_list %}
+            <div class="movie-row">
+                <div class="d-flex align-items-center gap-3">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}" style="width:70px;height:50px;object-fit:cover;border-radius:6px;">
+                    {% else %}
+                    <div class="no-img" style="width:70px;height:50px;border-radius:6px;">📰</div>
+                    {% endif %}
+                    <div>
+                        <div class="fw-bold">{{ item.title }}</div>
+                        <div class="text-secondary" style="font-size:13px;">
+                            📅 {{ item.created_at|date:"d.m.Y" }} •
+                            {% if item.is_published %}
+                            <span style="color:#28a745;">✔ Опубликовано</span>
+                            {% else %}
+                            <span style="color:#666;">⏸ Скрыто</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <a href="/admin-panel/news/{{ item.id }}/edit/" class="btn-edit">✏️ Изменить</a>
+                    <form method="POST" action="/admin-panel/news/{{ item.id }}/delete/" style="display:inline;" onsubmit="return confirm('Удалить новость?')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-delete">🗑️ Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-secondary">Новостей пока нет</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ПЕНСИОНЕРЫ -->
+    <div id="tab-pensioners" style="display:none;">
+        <div class="admin-card">
+            <div class="admin-title">⏳ Ожидают подтверждения ({{ pensioners_pending.count }})</div>
+            {% for u in pensioners_pending %}
+            <div class="pensioner-row">
+                <div>
+                    <div style="font-size:16px; font-weight:700; color:#fff;">👤 {{ u.username }}</div>
+                    <div class="text-secondary" style="font-size:13px; margin-top:5px;">
+                        📧 {{ u.email }}
+                        {% if u.phone %} • 📞 {{ u.phone }}{% endif %}
+                        • 🎂 Возраст: <strong style="color:#ffc107;">{{ u.age }} лет</strong>
+                        • 📅 {{ u.date_joined|date:"d.m.Y" }}
+                    </div>
+                </div>
+                <div class="d-flex gap-2 flex-shrink-0">
+                    <form method="POST" action="/admin-panel/pensioner/{{ u.id }}/confirm/">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-confirm">✅ Подтвердить</button>
+                    </form>
+                    <form method="POST" action="/admin-panel/pensioner/{{ u.id }}/reject/" onsubmit="return confirm('Отклонить заявку?')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-delete" style="padding:8px 14px;">✕ Отклонить</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align:center; padding:40px; color:#666;">
+                <div style="font-size:48px; margin-bottom:12px;">🎉</div>
+                <div style="font-size:15px;">Новых заявок нет</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="admin-card">
+            <div class="admin-title">✅ Подтверждённые пенсионеры ({{ pensioners_confirmed.count }})</div>
+            {% for u in pensioners_confirmed %}
+            <div class="pensioner-row confirmed">
+                <div>
+                    <div style="font-size:15px; font-weight:700; color:#fff;">👤 {{ u.username }}</div>
+                    <div class="text-secondary" style="font-size:13px; margin-top:5px;">
+                        📧 {{ u.email }}
+                        {% if u.age %} • 🎂 {{ u.age }} лет{% endif %}
+                    </div>
+                    <div style="margin-top:8px;">
+                        🎟 Промокод: <span class="promo-badge">{{ u.pensioner_promo_code }}</span>
+                        <span style="font-size:12px; color:#666; margin-left:8px;">— скидка 20%</span>
+                    </div>
+                </div>
+                <div style="color:#28a745; font-weight:700; font-size:13px;">✅ Подтверждён</div>
+            </div>
+            {% empty %}
+            <p class="text-secondary">Пока нет подтверждённых пенсионеров</p>
             {% endfor %}
         </div>
     </div>
@@ -401,17 +553,15 @@
 
 {% block extra_js %}
 <script>
-    // ТАБЫ
     function showTab(tab, event) {
-        document.getElementById('tab-movies').style.display = 'none';
-        document.getElementById('tab-actors').style.display = 'none';
-        document.getElementById('tab-sessions').style.display = 'none';
+        ['movies','actors','sessions','news','pensioners'].forEach(t => {
+            document.getElementById('tab-' + t).style.display = 'none';
+        });
         document.getElementById('tab-' + tab).style.display = 'block';
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
     }
 
-    // ЖАНР DROPDOWN
     function toggleGenreList() {
         document.getElementById('genreList').classList.toggle('open');
     }
@@ -438,7 +588,6 @@
         }
     }
 
-    // ВАЛИДАЦИЯ ФИЛЬМА
     function validateMovieForm() {
         let valid = true;
         const fields = [
@@ -450,15 +599,9 @@
         ];
         fields.forEach(f => {
             const el = document.getElementById(f.id);
-            if (!f.check(el.value)) {
-                el.classList.add('is-invalid');
-                valid = false;
-            } else {
-                el.classList.remove('is-invalid');
-            }
+            if (!f.check(el.value)) { el.classList.add('is-invalid'); valid = false; }
+            else { el.classList.remove('is-invalid'); }
         });
-
-        // Валидация жанра
         const genres = document.querySelectorAll('#genreList input[type=checkbox]:checked');
         if (genres.length === 0) {
             document.getElementById('genreTrigger').classList.add('is-invalid');
@@ -468,43 +611,39 @@
             document.getElementById('genreTrigger').classList.remove('is-invalid');
             document.getElementById('genreError').style.display = 'none';
         }
-
-        // Валидация трейлера (если заполнен)
         const trailer = document.getElementById('trailer_url');
         if (trailer.value && !trailer.value.includes('youtube.com') && !trailer.value.includes('youtu.be')) {
-            trailer.classList.add('is-invalid');
-            valid = false;
-        } else {
-            trailer.classList.remove('is-invalid');
-        }
-
+            trailer.classList.add('is-invalid'); valid = false;
+        } else { trailer.classList.remove('is-invalid'); }
         return valid;
     }
 
-    // ВАЛИДАЦИЯ АКТЁРА
     function validateActorForm() {
         const name = document.getElementById('actor_name');
-        if (!name.value.trim()) {
-            name.classList.add('is-invalid');
-            return false;
-        }
+        if (!name.value.trim()) { name.classList.add('is-invalid'); return false; }
         name.classList.remove('is-invalid');
         return true;
     }
 
-    // ВАЛИДАЦИЯ СЕАНСА
     function validateSessionForm() {
         let valid = true;
         const date = document.getElementById('session_date');
+        const time = document.getElementById('start_time');
         const ps = document.getElementById('price_standard');
         const pv = document.getElementById('price_vip');
-        if (!date.value) { date.classList.add('is-invalid'); valid = false; } else { date.classList.remove('is-invalid'); }
+        if (!date.value) {
+            date.classList.add('is-invalid'); valid = false;
+        } else {
+            const today = new Date(); today.setHours(0,0,0,0);
+            if (new Date(date.value) < today) { date.classList.add('is-invalid'); valid = false; }
+            else { date.classList.remove('is-invalid'); }
+        }
+        if (!time.value) { time.classList.add('is-invalid'); valid = false; } else { time.classList.remove('is-invalid'); }
         if (!ps.value || ps.value < 1) { ps.classList.add('is-invalid'); valid = false; } else { ps.classList.remove('is-invalid'); }
         if (!pv.value || pv.value < 1) { pv.classList.add('is-invalid'); valid = false; } else { pv.classList.remove('is-invalid'); }
         return valid;
     }
 
-    // ВАЛИДАЦИЯ ЗАЛА
     function validateHallForm() {
         let valid = true;
         const name = document.getElementById('hall_name');
@@ -516,9 +655,24 @@
         return valid;
     }
 
-    // Убираем красный при вводе
     document.querySelectorAll('.form-control').forEach(el => {
         el.addEventListener('input', () => el.classList.remove('is-invalid'));
     });
+
+    // Автоматически открыть нужный таб из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam && document.getElementById('tab-' + tabParam)) {
+        ['movies','actors','sessions','news','pensioners'].forEach(t => {
+            document.getElementById('tab-' + t).style.display = 'none';
+        });
+        document.getElementById('tab-' + tabParam).style.display = 'block';
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tabParam + "'")) {
+                btn.classList.add('active');
+            }
+        });
+    }
 </script>
 {% endblock %}

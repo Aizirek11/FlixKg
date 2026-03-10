@@ -22,6 +22,10 @@
     .total-line { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
     .total-line .tl-label { color: #aaa; }
     .total-line .tl-value { color: #fff; font-weight: 600; }
+    .total-line.discount .tl-label { color: #4ade80; }
+    .total-line.discount .tl-value { color: #4ade80; font-weight: 700; }
+    .total-line.promo .tl-label { color: #ffc107; }
+    .total-line.promo .tl-value { color: #ffc107; font-weight: 700; font-family: monospace; letter-spacing: 1px; }
     .total-final { display: flex; justify-content: space-between; font-size: 20px; font-weight: 900; color: #e50914; margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; }
     .receipt-footer { text-align: center; margin-top: 25px; padding-top: 25px; border-top: 2px dashed #333; }
     .receipt-footer p { color: #aaa; font-size: 13px; margin-bottom: 4px; }
@@ -39,7 +43,6 @@
   <div class="container pb-5">
     <div class="receipt-card">
 
-      <!-- ЗАГОЛОВОК -->
       <div class="receipt-header">
         <div class="success-icon">✅</div>
         <div class="receipt-logo">FlixKG</div>
@@ -48,7 +51,6 @@
         <div class="receipt-number">{{ receipt.created_at|date:"d.m.Y H:i" }}</div>
       </div>
 
-      <!-- ДЕТАЛИ -->
       <div class="receipt-row">
         <span class="label">Фильм</span>
         <span class="value">{{ receipt.payment.booking.session.movie.title }}</span>
@@ -66,7 +68,6 @@
         <span class="value">{{ receipt.payment.booking.session.hall.name }}</span>
       </div>
 
-      <!-- МЕСТА -->
       <div class="receipt-seats">
         <div class="seats-title">Места:</div>
         {% for seat in receipt.payment.booking.seats.all %}
@@ -86,7 +87,6 @@
         {% endfor %}
       </div>
 
-      <!-- ИТОГО -->
       <div class="receipt-total">
         <div class="total-line">
           <span class="tl-label">Количество билетов</span>
@@ -96,13 +96,28 @@
           <span class="tl-label">Способ оплаты</span>
           <span class="tl-value">💳 Картой</span>
         </div>
+
+        {% if receipt.promo_code %}
+        <div class="total-line promo">
+          <span class="tl-label">🎟 Промокод</span>
+          <span class="tl-value">{{ receipt.promo_code }}</span>
+        </div>
+        <div class="total-line">
+          <span class="tl-label">Сумма без скидки</span>
+          <span class="tl-value">{{ receipt.original_amount }} сом</span>
+        </div>
+        <div class="total-line discount">
+          <span class="tl-label">🎉 Скидка 20% (пенсионер)</span>
+          <span class="tl-value">-{{ receipt.discount_amount }} сом</span>
+        </div>
+        {% endif %}
+
         <div class="total-final">
           <span>К оплате</span>
           <span>{{ receipt.payment.amount }} сом</span>
         </div>
       </div>
 
-      <!-- ФУТЕР -->
       <div class="receipt-footer">
         <p>Спасибо за покупку!</p>
         <p>Приятного просмотра! 🎬</p>

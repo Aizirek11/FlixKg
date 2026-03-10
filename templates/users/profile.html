@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}Мой профиль — FlixKG{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-wrapper { max-width: 800px; margin: 40px auto; padding: 0 20px 60px; }
+    .profile-header { background: linear-gradient(135deg, #1a1a1a 0%, #2d0a0a 60%, #e50914 100%); border-radius: 20px; padding: 40px; display: flex; align-items: center; gap: 30px; margin-bottom: 30px; }
+    .avatar-wrap { position: relative; flex-shrink: 0; }
+    .avatar-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #e50914; }
+    .avatar-placeholder { width: 100px; height: 100px; border-radius: 50%; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid #e50914; }
+    .avatar-edit { position: absolute; bottom: 0; right: 0; background: #e50914; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; }
+    .profile-name { font-size: 26px; font-weight: 900; color: #fff; }
+    .profile-meta { color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 5px; }
+    .profile-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 10px; }
+    .badge-pensioner { background: #28a745; color: #fff; }
+    .badge-pending { background: #ffc107; color: #333; }
+    .badge-user { background: #2a2a2a; color: #aaa; }
+    .profile-card { background: #1a1a1a; border-radius: 16px; padding: 30px; margin-bottom: 20px; border: 1px solid #2a2a2a; }
+    .profile-card-title { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #2a2a2a; }
+    .form-label { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .form-control { background: #2a2a2a; border: 1px solid #333; color: #fff; border-radius: 10px; padding: 12px 15px; }
+    .form-control:focus { border-color: #e50914; box-shadow: none; background: #2a2a2a; color: #fff; }
+    .form-control::placeholder { color: #555; }
+    .btn-save { background: #e50914; color: #fff; border: none; border-radius: 10px; padding: 12px 30px; font-weight: 700; }
+    .btn-save:hover { background: #b0070f; color: #fff; }
+    .promo-box { background: #0d2b0d; border: 2px solid #28a745; border-radius: 12px; padding: 20px 25px; }
+    .promo-code { font-family: monospace; font-size: 28px; font-weight: 900; color: #28a745; letter-spacing: 3px; margin: 10px 0; }
+    .promo-desc { color: #aaa; font-size: 13px; }
+    .pending-box { background: #2b1f00; border: 2px solid #ffc107; border-radius: 12px; padding: 20px 25px; }
+    .btn-apply { background: #ffc107; color: #333; border: none; border-radius: 8px; padding: 9px 18px; font-weight: 700; font-size: 13px; cursor: pointer; margin-top: 12px; display: inline-block; }
+    .btn-apply:hover { background: #e0a800; }
+    .btn-cancel { background: transparent; border: 1px solid #ffc107; color: #ffc107; border-radius: 8px; padding: 8px 18px; font-weight: 600; font-size: 13px; cursor: pointer; margin-top: 12px; }
+    .btn-cancel:hover { background: #ffc107; color: #333; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-wrapper">
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert" style="background:#0d2b0d;border:1px solid #28a745;color:#5cb85c;border-radius:10px;margin-bottom:20px;">
+        ✅ {{ msg }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- ШАПКА ПРОФИЛЯ -->
+    <div class="profile-header">
+        <form method="post" enctype="multipart/form-data" id="avatarForm">
+            {% csrf_token %}
+            <div class="avatar-wrap">
+                {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" class="avatar-img" alt="Аватар">
+                {% else %}
+                <div class="avatar-placeholder">👤</div>
+                {% endif %}
+                <label class="avatar-edit" for="avatarInput" title="Сменить фото">✏️</label>
+                <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none;" onchange="document.getElementById('avatarForm').submit()">
+            </div>
+        </form>
+        <div>
+            <div class="profile-name">{{ user.username }}</div>
+            <div class="profile-meta">📧 {{ user.email }}</div>
+            {% if user.phone %}<div class="profile-meta">📞 {{ user.phone }}</div>{% endif %}
+            {% if user.age %}<div class="profile-meta">🎂 Возраст: {{ user.age }} лет</div>{% endif %}
+
+            {% if user.is_pensioner %}
+            <span class="profile-badge badge-pensioner">👴 Подтверждённый пенсионер</span>
+            {% elif user.is_pensioner_pending %}
+            <span class="profile-badge badge-pending">⏳ Заявка на рассмотрении</span>
+            {% elif user.is_staff %}
+            <span class="profile-badge" style="background:#c8960c;color:#fff;">👑 Администратор</span>
+            {% else %}
+            <span class="profile-badge badge-user">👤 Пользователь</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ПРОМОКОД ДЛЯ ПЕНСИОНЕРА -->
+    {% if user.is_pensioner and user.pensioner_promo_code %}
+    <div class="profile-card">
+        <div class="profile-card-title">🎟 Ваша скидка</div>
+        <div class="promo-box">
+            <div style="color:#5cb85c;font-weight:700;font-size:15px;">🎉 Ваш промокод на скидку 20%</div>
+            <div class="promo-code">{{ user.pensioner_promo_code }}</div>
+            <div class="promo-desc">Введите этот код при покупке билета и получите скидку 20% на любой сеанс.</div>
+        </div>
+    </div>
+
+    {% elif user.is_pensioner_pending %}
+    <div class="profile-card">
+        <div class="profile-card-title">⏳ Статус заявки</div>
+        <div class="pending-box">
+            <div style="color:#ffc107;font-weight:700;font-size:15px;">⏳ Ваша заявка на рассмотрении</div>
+            <div style="color:#aaa;font-size:13px;margin-top:8px;">Администратор проверяет вашу заявку. После подтверждения вам придёт уведомление с промокодом на скидку 20%.</div>
+            <form method="post" action="/profile/cancel-pensioner/">
+                {% csrf_token %}
+                <button type="submit" class="btn-cancel">✕ Отозвать заявку</button>
+            </form>
+        </div>
+    </div>
+
+    {% elif not user.is_staff %}
+    {% if user.age and user.age >= 60 %}
+    <div class="profile-card">
+        <div class="profile-card-title">👴 Скидка для пенсионеров</div>
+        <div style="color:#aaa;font-size:14px;">Вы можете подать заявку на скидку 20% для пенсионеров. После проверки администратором вам придёт промокод.</div>
+        <form method="post" action="/profile/apply-pensioner/">
+            {% csrf_token %}
+            <button type="submit" class="btn-apply">👴 Подать заявку на скидку пенсионера</button>
+        </form>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- РЕДАКТИРОВАТЬ ПРОФИЛЬ -->
+    <div class="profile-card">
+        <div class="profile-card-title">✏️ Редактировать профиль</div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Телефон</label>
+                    <input type="text" name="phone" class="form-control" value="{{ user.phone|default:'' }}" placeholder="+996 700 000 000">
+                </div>
+            </div>
+            <button type="submit" class="btn-save mt-4">Сохранить изменения</button>
+        </form>
+    </div>
+
+    <!-- ССЫЛКИ -->
+    <div class="profile-card">
+        <div class="profile-card-title">🔗 Быстрые ссылки</div>
+        <div class="d-flex gap-3 flex-wrap">
+            <a href="/account/" style="background:#2a2a2a;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600;">🎫 Мои билеты</a>
+            <a href="/account/?tab=notifications" style="background:#2a2a2a;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600;">🔔 Уведомления</a>
+            <a href="/logout/" style="background:#2a1a1a;color:#e50914;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600;border:1px solid #3a2a2a;">🚪 Выйти</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

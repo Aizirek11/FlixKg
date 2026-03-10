@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Редактировать новость — FlixKG{% endblock %}
+{% block extra_css %}
+<style>
+    .admin-card { background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
+    .admin-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; color: #1a1a1a; border-left: 4px solid #e50914; padding-left: 15px; }
+    .form-label { font-weight: 600; color: #555; font-size: 13px; }
+    .form-control { background: #f5f5f5; border: 1px solid #ddd; color: #1a1a1a; border-radius: 8px; padding: 10px 15px; }
+    .form-control:focus { border-color: #e50914; box-shadow: none; background: #fff; }
+    .btn-submit { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 12px 30px; font-weight: 700; font-size: 15px; }
+    .btn-submit:hover { background: #b0070f; color: #fff; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container mt-4 pb-5" style="max-width:800px;">
+    <a href="/admin-panel/" style="color:#e50914;text-decoration:none;">← Назад к панели</a>
+    <h2 class="fw-bold my-4">✏️ Редактировать новость</h2>
+    <div class="admin-card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Заголовок *</label>
+                    <input type="text" name="title" class="form-control" value="{{ item.title }}" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Содержание *</label>
+                    <textarea name="content" class="form-control" rows="6" required>{{ item.content }}</textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Изображение (оставьте пустым чтобы не менять)</label>
+                    <input type="file" name="image" class="form-control" accept="image/*">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" style="margin-top:10px;height:80px;border-radius:6px;">
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input type="checkbox" name="is_published" class="form-check-input" id="is_published" {% if item.is_published %}checked{% endif %}>
+                        <label class="form-check-label fw-bold" for="is_published">Опубликовано</label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit mt-4">Сохранить</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -20,6 +20,9 @@
     .btn-pay { background: #e50914; color: #fff; border: none; border-radius: 10px; padding: 15px; width: 100%; font-size: 18px; font-weight: 700; transition: background 0.2s; }
     .btn-pay:hover { background: #b0070f; }
     .secure-badge { text-align: center; color: #555; font-size: 12px; margin-top: 15px; }
+    .discount-row { color: #4ade80; font-weight: 700; }
+    .promo-success { background: #0d2b0d; border: 1px solid #28a745; border-radius: 8px; padding: 10px 15px; color: #4ade80; font-weight: 700; margin-top: 10px; }
+    .promo-error { background: #2b0d0d; border: 1px solid #e50914; border-radius: 8px; padding: 10px 15px; color: #e50914; font-weight: 700; margin-top: 10px; }
 </style>
 {% endblock %}
 
@@ -27,6 +30,14 @@
 <div class="container mt-5" style="max-width: 600px;">
     <div class="payment-card">
         <div class="payment-title">💳 Оплата билета</div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}promo-error{% else %}promo-success{% endif %}" style="margin-bottom: 15px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
 
         <div class="order-info">
             <div class="order-row">
@@ -45,7 +56,7 @@
                 <span class="label">Места</span>
                 <span class="value">
                     {% for seat in booking.seats.all %}
-                    Ряд {{ seat.row }} Место {{ seat.number }}{% if not forloop.last %}, {% endif %}
+                        Ряд {{ seat.row }} Место {{ seat.number }}{% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 </span>
             </div>
@@ -53,13 +64,39 @@
                 <span>Итого</span>
                 <span>{{ booking.total_price }} сом</span>
             </div>
+            {% if discount_amount %}
+            <div class="order-row discount-row">
+                <span>🎉 Скидка 20%</span>
+                <span>-{{ discount_amount }} сом</span>
+            </div>
+            <div class="order-row total-row">
+                <span>К оплате</span>
+                <span>{{ final_price }} сом</span>
+            </div>
+            {% endif %}
         </div>
 
         <div class="card-icons">💳 🔒</div>
 
+        <!-- ФОРМА ПРОМОКОДА -->
+        <form method="post" action="/payment/{{ booking.pk }}/check-promo/" style="margin-bottom: 20px;">
+            {% csrf_token %}
+            <div class="input-label">Промокод (необязательно)</div>
+            <div class="d-flex gap-2">
+                <input type="text" name="promo_code" class="card-input"
+                       placeholder="PENSION-XXXXXX"
+                       value="{{ promo_code|default:'' }}"
+                       style="text-transform:uppercase;">
+                <button type="submit" style="background:#2a2a2a;border:1px solid #444;color:#fff;border-radius:8px;padding:0 18px;font-weight:600;white-space:nowrap;cursor:pointer;">
+                    Применить
+                </button>
+            </div>
+        </form>
+
+        <!-- ФОРМА ОПЛАТЫ -->
         <form method="post">
             {% csrf_token %}
-            <input type="hidden" name="booking_id" value="{{ booking.id }}">
+            <input type="hidden" name="promo_code" value="{{ promo_code|default:'' }}">
 
             <div class="mb-3">
                 <div class="input-label">Номер карты</div>
@@ -71,21 +108,22 @@
             <div class="row g-3 mb-3">
                 <div class="col-6">
                     <div class="input-label">Срок действия</div>
-                    <input type="text" name="card_expiry" class="card-input" placeholder="MM/YY" maxlength="5" required>
+                    <input type="text" name="card_expiry" class="card-input" placeholder="MM/YY" maxlength="5">
                 </div>
                 <div class="col-6">
                     <div class="input-label">CVV</div>
-                    <input type="password" name="card_cvv" class="card-input" placeholder="***" maxlength="3" required>
+                    <input type="password" name="card_cvv" class="card-input" placeholder="***" maxlength="3">
                 </div>
             </div>
 
             <div class="mb-4">
                 <div class="input-label">Имя на карте</div>
-                <input type="text" name="card_name" class="card-input" placeholder="IVAN IVANOV" style="text-transform:uppercase;" required>
+                <input type="text" name="card_name" class="card-input"
+                       placeholder="IVAN IVANOV" style="text-transform:uppercase;">
             </div>
 
-            <button type="submit" class="btn-pay">
-                Оплатить {{ booking.total_price }} сом
+            <button type="submit" name="pay" class="btn-pay">
+                Оплатить {% if final_price %}{{ final_price }}{% else %}{{ booking.total_price }}{% endif %} сом
             </button>
         </form>
 
@@ -99,8 +137,9 @@
 {% block extra_js %}
 <script>
     function formatCard(input) {
-        let value = input.value.replace(/\D/g, '').substring(0, 16);
-        input.value = value.replace(/(.{4})/g, '$1 ').trim();
+        let digits = input.value.replace(/\D/g, '').substring(0, 16);
+        let formatted = digits.match(/.{1,4}/g);
+        input.value = formatted ? formatted.join(' ') : '';
     }
 </script>
 {% endblock %}

@@ -3,43 +3,234 @@
 
 {% block extra_css %}
 <style>
-    .auth-card { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px; max-width: 440px; margin: 60px auto; }
-    .auth-title { font-size: 28px; font-weight: 900; margin-bottom: 5px; }
-    .auth-input { background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 8px; padding: 12px 15px; width: 100%; font-size: 15px; }
-    .auth-input:focus { outline: none; border-color: #e50914; }
-    .auth-input::placeholder { color: #555; }
-    .input-label { color: #888; font-size: 13px; margin-bottom: 6px; }
-    .btn-auth { background: #e50914; color: #fff; border: none; border-radius: 8px; padding: 13px; width: 100%; font-size: 16px; font-weight: 700; }
-    .btn-auth:hover { background: #b0070f; }
+    .auth-wrapper {
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    .auth-container {
+        display: flex;
+        width: 100%;
+        max-width: 900px;
+        background: #fff;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+    .auth-left {
+        flex: 1;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d0a0a 50%, #e50914 100%);
+        padding: 60px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    .auth-left::before {
+        content: '';
+        position: absolute;
+        top: -80px; right: -80px;
+        width: 250px; height: 250px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+    .auth-left::after {
+        content: '';
+        position: absolute;
+        bottom: -60px; left: -60px;
+        width: 200px; height: 200px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+    .auth-left-logo {
+        font-size: 32px;
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: -1px;
+    }
+    .auth-left-logo span { color: #ff4d57; }
+    .auth-left-title {
+        font-size: 36px;
+        font-weight: 900;
+        color: #fff;
+        line-height: 1.2;
+        margin-bottom: 16px;
+    }
+    .auth-left-sub {
+        color: rgba(255,255,255,0.6);
+        font-size: 15px;
+        line-height: 1.6;
+    }
+    .auth-feature {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
+    }
+    .auth-feature-icon {
+        width: 36px; height: 36px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    .auth-feature-text { color: rgba(255,255,255,0.75); font-size: 13px; }
+    .auth-right {
+        flex: 1;
+        padding: 60px 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .auth-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin-bottom: 6px;
+    }
+    .auth-subtitle {
+        color: #999;
+        font-size: 14px;
+        margin-bottom: 36px;
+    }
+    .field-wrap {
+        margin-bottom: 18px;
+    }
+    .field-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 8px;
+    }
+    .field-input-wrap {
+        position: relative;
+    }
+    .field-input-wrap i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ccc;
+        font-size: 14px;
+    }
+    .auth-input {
+        width: 100%;
+        background: #f7f7f7;
+        border: 2px solid #f0f0f0;
+        border-radius: 12px;
+        padding: 13px 15px 13px 40px;
+        font-size: 15px;
+        color: #1a1a1a;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .auth-input:focus {
+        outline: none;
+        border-color: #e50914;
+        background: #fff;
+    }
+    .auth-input::placeholder { color: #bbb; }
+    .btn-auth {
+        width: 100%;
+        background: #e50914;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 700;
+        margin-top: 8px;
+        transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+        box-shadow: 0 4px 15px rgba(229,9,20,0.3);
+    }
+    .btn-auth:hover {
+        background: #c0070f;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(229,9,20,0.4);
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 14px;
+        color: #aaa;
+    }
+    .auth-footer a {
+        color: #e50914;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .auth-footer a:hover { text-decoration: underline; }
+    @media (max-width: 768px) {
+        .auth-left { display: none; }
+        .auth-right { padding: 40px 28px; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="auth-card">
-        <div class="auth-title">Вход в FlixKG</div>
-        <p class="text-secondary mb-4">Войдите чтобы бронировать билеты</p>
-
-        {% if error %}
-        <div class="alert alert-danger">{{ error }}</div>
-        {% endif %}
-
-        <form method="post">
-            {% csrf_token %}
-            <div class="mb-3">
-                <div class="input-label">Имя пользователя</div>
-                <input type="text" name="username" class="auth-input" placeholder="Введите имя пользователя" required>
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <!-- Левая сторона -->
+        <div class="auth-left">
+            <div class="auth-left-logo">Flix<span>KG</span></div>
+            <div>
+                <div class="auth-left-title">Кино у вас<br>в кармане 🎬</div>
+                <div class="auth-left-sub">Бронируйте билеты онлайн за пару минут</div>
+                <div class="auth-feature">
+                    <div class="auth-feature-icon">💺</div>
+                    <div class="auth-feature-text">Выбор любого места в зале</div>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature-icon">🎫</div>
+                    <div class="auth-feature-text">Электронный билет на телефон</div>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature-icon">⚡</div>
+                    <div class="auth-feature-text">Быстрая оплата онлайн</div>
+                </div>
             </div>
-            <div class="mb-4">
-                <div class="input-label">Пароль</div>
-                <input type="password" name="password" class="auth-input" placeholder="Введите пароль" required>
-            </div>
-            <button type="submit" class="btn-auth">Войти</button>
-        </form>
+            <div style="color:rgba(255,255,255,0.3); font-size:12px;">© 2024 FlixKG</div>
+        </div>
 
-        <p class="text-center mt-4 text-secondary">
-            Нет аккаунта? <a href="/register/" style="color:#e50914;">Зарегистрироваться</a>
-        </p>
+        <!-- Правая сторона -->
+        <div class="auth-right">
+            <div class="auth-title">Добро пожаловать!</div>
+            <div class="auth-subtitle">Введите данные для входа</div>
+
+            {% if error %}
+            <div class="alert alert-danger py-2 mb-3" style="font-size:13px;border-radius:10px;border:none;background:#fff0f0;color:#c00;">
+                <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="field-wrap">
+                    <div class="field-label">Имя пользователя</div>
+                    <div class="field-input-wrap">
+                        <i class="fas fa-user"></i>
+                        <input type="text" name="username" class="auth-input" placeholder="Введите имя пользователя" required>
+                    </div>
+                </div>
+                <div class="field-wrap">
+                    <div class="field-label">Пароль</div>
+                    <div class="field-input-wrap">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" name="password" class="auth-input" placeholder="Введите пароль" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-auth">Войти в аккаунт</button>
+            </form>
+
+            <div class="auth-footer">
+                Нет аккаунта? <a href="/register/">Зарегистрироваться</a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

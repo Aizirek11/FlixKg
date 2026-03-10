@@ -4,18 +4,23 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.decorators import api_view
+from payments.views import payment_view, receipt_view, ticket_pdf_view, check_promo_view, check_promo_view_page
 from rest_framework.response import Response
-from movies.views import ( add_movie_actor_view, delete_movie_actor_view)
+
 from movies.views import (
     movie_list_view, movie_detail_view, add_review_view,
     admin_panel_view, add_movie_view, delete_movie_view,
     add_actor_view, delete_actor_view,
     add_session_view, delete_session_view,
-    add_hall_view, edit_movie_view
+    add_hall_view, edit_movie_view, delete_hall_view,
+    add_news_view, delete_news_view, edit_news_view,
+    add_movie_actor_view, delete_movie_actor_view,
+    confirm_pensioner_view, reject_pensioner_view
 )
 from bookings.views import seat_selection_view, create_booking_view
-from payments.views import payment_view, receipt_view, ticket_pdf_view
-from users.views import login_view, register_view, logout_view, account_view
+from payments.views import payment_view, receipt_view, ticket_pdf_view, check_promo_view
+from users.views import login_view, register_view, logout_view, account_view, profile_view, apply_pensioner_view, cancel_pensioner_view
+from news.views import news_list_view, news_detail_view
 
 
 @api_view(['GET'])
@@ -85,12 +90,20 @@ urlpatterns = [
     path('sessions/<int:pk>/seats/', seat_selection_view, name='seat-selection'),
     path('bookings/create/', create_booking_view, name='create-booking'),
     path('payment/<int:pk>/', payment_view, name='payment'),
+    path('payment/check-promo/', check_promo_view, name='check-promo'),
     path('receipt/<str:receipt_number>/', receipt_view, name='receipt'),
     path('tickets/<int:pk>/pdf/', ticket_pdf_view, name='ticket-pdf'),
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
     path('account/', account_view, name='account'),
+    path('profile/', profile_view, name='profile'),
+    path('profile/apply-pensioner/', apply_pensioner_view, name='apply-pensioner'),
+    path('profile/cancel-pensioner/', cancel_pensioner_view, name='cancel-pensioner'),
+
+    # Новости
+    path('news/', news_list_view, name='news-list'),
+    path('news/<int:pk>/', news_detail_view, name='news-detail'),
 
     # Админ панель HTML
     path('admin-panel/', admin_panel_view, name='admin-panel'),
@@ -102,7 +115,15 @@ urlpatterns = [
     path('admin-panel/session/add/', add_session_view, name='add-session'),
     path('admin-panel/session/<int:pk>/delete/', delete_session_view, name='delete-session'),
     path('admin-panel/hall/add/', add_hall_view, name='add-hall'),
-
+    path('admin-panel/hall/<int:pk>/delete/', delete_hall_view, name='delete-hall'),
+    path('admin-panel/movie-actor/add/', add_movie_actor_view, name='add-movie-actor'),
+    path('admin-panel/movie-actor/<int:pk>/delete/', delete_movie_actor_view, name='delete-movie-actor'),
+    path('admin-panel/news/add/', add_news_view, name='add-news'),
+    path('admin-panel/news/<int:pk>/delete/', delete_news_view, name='delete-news'),
+    path('admin-panel/news/<int:pk>/edit/', edit_news_view, name='edit-news'),
+    path('admin-panel/pensioner/<int:pk>/confirm/', confirm_pensioner_view, name='confirm-pensioner'),
+    path('admin-panel/pensioner/<int:pk>/reject/', reject_pensioner_view, name='reject-pensioner'),
+    path('payment/<int:pk>/check-promo/', check_promo_view_page, name='check-promo-page'),
     # API
     path('api/', api_root, name='api-root'),
     path('api/users/', include('users.urls')),
@@ -111,8 +132,6 @@ urlpatterns = [
     path('api/', include('payments.urls')),
     path('api/', include('notifications.urls')),
     path('api-auth/', include('rest_framework.urls')),
-path('admin-panel/movie-actor/add/', add_movie_actor_view, name='add-movie-actor'),
-path('admin-panel/movie-actor/<int:pk>/delete/', delete_movie_actor_view, name='delete-movie-actor'),
 
     # Swagger
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

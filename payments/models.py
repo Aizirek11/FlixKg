@@ -1,5 +1,4 @@
 from django.db import models
-from django.db import models
 from bookings.models import Booking
 
 
@@ -26,6 +25,9 @@ class Payment(models.Model):
 class Receipt(models.Model):
     payment = models.OneToOneField(Payment, on_delete=models.CASCADE, related_name='receipt')
     receipt_number = models.CharField(max_length=20, unique=True)
+    promo_code = models.CharField(max_length=20, blank=True, default='')
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    original_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -34,4 +36,3 @@ class Receipt(models.Model):
 
     def __str__(self):
         return f'Чек {self.receipt_number}'
-# Create your models here.

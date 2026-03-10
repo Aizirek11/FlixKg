@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, generics
@@ -11,6 +12,7 @@ from .models import Payment, Receipt
 from .serializers import PaymentSerializer, ReceiptSerializer
 from .utils import generate_ticket, generate_receipt_number
 from notifications.models import Notification
+from decimal import Decimal
 
 User = get_user_model()
 
@@ -55,6 +57,13 @@ class PayView(APIView):
                         f'{booking.total_price} сом'
             )
 
+        Notification.objects.create(
+            recipient=request.user,
+            message=f'✅ Вы успешно купили билет на "{booking.session.movie.title}" '
+                    f'({booking.session.date} {booking.session.start_time}) — '
+                    f'{booking.total_price} сом. Билет №{ticket.ticket_number}'
+        )
+
         return Response({
             'message': 'Оплата прошла успешно!',
             'ticket_number': ticket.ticket_number,
@@ -85,22 +94,78 @@ class ReceiptDetailView(generics.RetrieveAPIView):
 
 
 @login_required
-def payment_view(request, pk):
+def check_promo_view(request):
+    code = request.GET.get('code', '').strip().upper()
+    username = request.GET.get('username', '').strip()
+
+    if not code:
+        return JsonResponse({'valid': False, 'error': 'Промокод не указан'})
+
+    try:
+        User.objects.get(username=username, pensioner_promo_code=code, is_pensioner=True)
+        return JsonResponse({'valid': True})
+    except User.DoesNotExist:
+        return JsonResponse({'valid': False, 'error': 'Промокод недействителен или не принадлежит вам'})
+
+
+@login_required
+def check_promo_view_page(request, pk):
     booking = get_object_or_404(Booking, pk=pk, user=request.user)
 
     if request.method == 'POST':
-        card_number = request.POST.get('card_number', '').replace(' ', '')
-        card_expiry = request.POST.get('card_expiry', '')
-        card_cvv = request.POST.get('card_cvv', '')
+        promo_code = request.POST.get('promo_code', '').strip().upper()
+        try:
+            User.objects.get(
+                username=request.user.username,
+                pensioner_promo_code=promo_code,
+                is_pensioner=True
+            )
+            request.session[f'promo_{pk}'] = promo_code
+            messages.success(request, '✅ Промокод применён! Скидка 20%')
+        except User.DoesNotExist:
+            request.session[f'promo_{pk}'] = ''
+            messages.error(request, '❌ Промокод недействителен!')
 
-        card_clean = card_number.replace(' ', '').replace('-', '')
-        if not card_clean.isdigit() or len(card_clean) != 16:
+    return redirect(f'/payment/{pk}/')
+
+
+@login_required
+def payment_view(request, pk):
+    booking = get_object_or_404(Booking, pk=pk, user=request.user)
+
+    if booking.status == 'paid':
+        messages.error(request, 'Эта бронь уже оплачена!')
+        return redirect('/')
+
+    promo_code = request.session.get(f'promo_{pk}', '')
+    discount_amount = 0
+    final_price = booking.total_price
+
+    if promo_code:
+        try:
+            User.objects.get(
+                username=request.user.username,
+                pensioner_promo_code=promo_code,
+                is_pensioner=True
+            )
+            discount_amount = round(booking.total_price * Decimal('0.20'), 2)
+            final_price = round(booking.total_price - discount_amount, 2)
+        except User.DoesNotExist:
+            promo_code = ''
+            request.session[f'promo_{pk}'] = ''
+
+    if request.method == 'POST' and 'pay' in request.POST:
+        card_number = request.POST.get('card_number', '').replace(' ', '').replace('-', '')
+
+        if not card_number.isdigit() or len(card_number) != 16:
             messages.error(request, 'Введите 16 цифр карты!')
             return redirect(f'/payment/{pk}/')
 
+        Payment.objects.filter(booking=booking).delete()
+
         payment = Payment.objects.create(
             booking=booking,
-            amount=booking.total_price,
+            amount=final_price,
             status='success',
             card_last4=card_number[-4:]
         )
@@ -112,21 +177,37 @@ def payment_view(request, pk):
 
         receipt = Receipt.objects.create(
             payment=payment,
-            receipt_number=generate_receipt_number()
+            receipt_number=generate_receipt_number(),
+            promo_code=promo_code,
+            discount_amount=discount_amount,
+            original_amount=booking.total_price if promo_code else 0,
         )
+
+        request.session[f'promo_{pk}'] = ''
 
         admins = User.objects.filter(is_staff=True)
         for admin in admins:
             Notification.objects.create(
                 recipient=admin,
                 message=f'{request.user.username} купил билет на "{booking.session.movie.title}" '
-                        f'({booking.session.date} {booking.session.start_time}) — '
-                        f'{booking.total_price} сом'
+                        f'({booking.session.date} {booking.session.start_time}) — {final_price} сом'
             )
+
+        Notification.objects.create(
+            recipient=request.user,
+            message=f'✅ Вы успешно купили билет на "{booking.session.movie.title}" '
+                    f'({booking.session.date} {booking.session.start_time}) — '
+                    f'{final_price} сом. Билет №{ticket.ticket_number}'
+        )
 
         return redirect(f'/receipt/{receipt.receipt_number}/')
 
-    return render(request, 'payments/payment.html', {'booking': booking})
+    return render(request, 'payments/payment.html', {
+        'booking': booking,
+        'promo_code': promo_code,
+        'discount_amount': discount_amount,
+        'final_price': final_price if promo_code else None,
+    })
 
 
 @login_required
@@ -160,27 +241,22 @@ def ticket_pdf_view(request, pk):
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
 
-    # Фон
     p.setFillColorRGB(0, 0, 0)
     p.rect(0, 0, 595, 842, fill=1)
 
-    # Логотип
     p.setFillColorRGB(0.9, 0.04, 0.08)
     p.setFont('DejaVu-Bold', 36)
     p.drawString(50, 760, 'FlixKG')
 
-    # Название фильма
     p.setFillColorRGB(1, 1, 1)
     p.setFont('DejaVu-Bold', 22)
     p.drawString(50, 710, ticket.booking.session.movie.title)
 
-    # Детали
     p.setFont('DejaVu', 14)
     p.drawString(50, 670, f'Дата: {ticket.booking.session.date}')
     p.drawString(50, 645, f'Время: {ticket.booking.session.start_time}')
     p.drawString(50, 620, f'Зал: {ticket.booking.session.hall.name}')
 
-    # Места
     p.drawString(50, 595, 'Места:')
     seats = ticket.booking.seats.all()
     y = 572
@@ -189,20 +265,16 @@ def ticket_pdf_view(request, pk):
         p.drawString(70, y, f'Ряд {s.row},  Место {s.number}  — {seat_type_ru}')
         y -= 22
 
-    # Сумма
     p.drawString(50, y - 15, f'Сумма: {ticket.booking.total_price} сом')
 
-    # Разделитель
     p.setStrokeColorRGB(0.9, 0.04, 0.08)
     p.setLineWidth(2)
     p.line(50, y - 35, 545, y - 35)
 
-    # Номер билета
     p.setFont('DejaVu', 12)
     p.setFillColorRGB(0.7, 0.7, 0.7)
     p.drawString(50, y - 55, f'Билет №: {ticket.ticket_number}')
 
-    # QR-код
     if ticket.qr_code:
         p.drawImage(ticket.qr_code.path, 390, 580, width=160, height=160)
 

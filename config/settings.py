@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-
 load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -25,14 +23,15 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'drf_spectacular',
-    'django_filters',  # ← добавь это
+    'django_filters',
 
     # Local
     'movies',
     'bookings',
     'users',
     'payments',
-    'notifications',  # ← добавь это
+    'notifications',
+    'news',
 ]
 
 MIDDLEWARE = [
@@ -47,20 +46,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',  # ← добавь это
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
-
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -72,6 +57,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'users.context_processors.notifications_processor',
             ],
         },
     },
@@ -112,6 +98,7 @@ AUTH_USER_MODEL = 'users.User'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -142,5 +129,4 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
-# YouTube embed — разрешаем iframe
 X_FRAME_OPTIONS = 'SAMEORIGIN'

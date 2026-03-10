@@ -1,8 +1,11 @@
+import random
+import string
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib import messages
 from rest_framework import generics, permissions, filters
+from django.contrib.auth import get_user_model
 from django.contrib.admin.views.decorators import staff_member_required
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,6 +14,9 @@ from .serializers import (
     MovieListSerializer, MovieDetailSerializer, MovieCreateSerializer,
     ActorSerializer, GenreSerializer, ReviewSerializer
 )
+from notifications.models import Notification
+
+User = get_user_model()
 
 
 class MovieListView(generics.ListAPIView):
@@ -69,6 +75,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
 
 
 def movie_list_view(request):
+    from news.models import News
     movies = Movie.objects.all()
     genres = Genre.objects.all()
 
@@ -84,9 +91,12 @@ def movie_list_view(request):
     page = request.GET.get('page')
     movies = paginator.get_page(page)
 
+    news = News.objects.filter(is_published=True)[:3]
+
     return render(request, 'movies/movie_list.html', {
         'movies': movies,
         'genres': genres,
+        'news': news,
     })
 
 
@@ -113,25 +123,48 @@ def add_review_view(request, pk):
                 text=text
             )
             messages.success(request, 'Отзыв добавлен!')
+
+            admins = User.objects.filter(is_staff=True)
+            for admin in admins:
+                Notification.objects.create(
+                    recipient=admin,
+                    message=f'⭐ {request.user.username} оставил отзыв на "{movie.title}" — {rating}/5'
+                )
+
+            Notification.objects.create(
+                recipient=request.user,
+                message=f'✅ Ваш отзыв на "{movie.title}" успешно опубликован!'
+            )
+
     return redirect(f'/movies/{pk}/')
-
-
 
 
 @staff_member_required
 def admin_panel_view(request):
     from bookings.models import Hall, Session
+    from news.models import News
     movies = Movie.objects.all()
     actors = Actor.objects.all()
     genres = Genre.objects.all()
     halls = Hall.objects.all()
     sessions = Session.objects.all().order_by('-date')
+    news_list = News.objects.all()
+    pensioners_pending = User.objects.filter(is_pensioner_pending=True)
+    pensioners_confirmed = User.objects.filter(is_pensioner=True)
+
+    paginator = Paginator(movies, 10)
+    page = request.GET.get('page')
+    movies = paginator.get_page(page)
+
     return render(request, 'movies/admin_panel.html', {
         'movies': movies,
         'actors': actors,
         'genres': genres,
         'halls': halls,
         'sessions': sessions,
+        'news_list': news_list,
+        'pensioners_pending': pensioners_pending,
+        'pensioners_confirmed': pensioners_confirmed,
     })
 
 
@@ -219,6 +252,7 @@ def delete_session_view(request, pk):
     messages.success(request, 'Сеанс удалён!')
     return redirect('/admin-panel/')
 
+
 @staff_member_required
 def add_hall_view(request):
     from bookings.models import Hall, Seat
@@ -236,7 +270,6 @@ def add_hall_view(request):
             total_seats=total_seats
         )
 
-        # Автоматически создаём все места
         for row in range(1, total_rows + 1):
             for seat_num in range(1, total_seats + 1):
                 seat_type = 'vip' if row <= vip_rows else 'standard'
@@ -249,6 +282,16 @@ def add_hall_view(request):
 
         messages.success(request, f'Зал "{name}" добавлен с {total_rows * total_seats} местами!')
     return redirect('/admin-panel/')
+
+
+@staff_member_required
+def delete_hall_view(request, pk):
+    from bookings.models import Hall
+    hall = get_object_or_404(Hall, pk=pk)
+    hall.delete()
+    messages.success(request, 'Зал удалён!')
+    return redirect('/admin-panel/')
+
 
 @staff_member_required
 def edit_movie_view(request, pk):
@@ -285,6 +328,7 @@ def add_movie_actor_view(request):
         messages.success(request, 'Актёр добавлен в фильм!')
     return redirect('/admin-panel/')
 
+
 @staff_member_required
 def delete_movie_actor_view(request, pk):
     from .models import MovieActor
@@ -292,3 +336,72 @@ def delete_movie_actor_view(request, pk):
     ma.delete()
     messages.success(request, 'Актёр удалён из фильма!')
     return redirect('/admin-panel/')
+
+
+@staff_member_required
+def add_news_view(request):
+    from news.models import News
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        image = request.FILES.get('image')
+        is_published = request.POST.get('is_published') == 'on'
+        News.objects.create(title=title, content=content, image=image, is_published=is_published)
+        messages.success(request, f'Новость "{title}" добавлена!')
+    return redirect('/admin-panel/')
+
+
+@staff_member_required
+def delete_news_view(request, pk):
+    from news.models import News
+    item = get_object_or_404(News, pk=pk)
+    item.delete()
+    messages.success(request, 'Новость удалена!')
+    return redirect('/admin-panel/')
+
+
+@staff_member_required
+def edit_news_view(request, pk):
+    from news.models import News
+    item = get_object_or_404(News, pk=pk)
+    if request.method == 'POST':
+        item.title = request.POST.get('title')
+        item.content = request.POST.get('content')
+        item.is_published = request.POST.get('is_published') == 'on'
+        if request.FILES.get('image'):
+            item.image = request.FILES.get('image')
+        item.save()
+        messages.success(request, 'Новость обновлена!')
+        return redirect('/admin-panel/')
+    return render(request, 'news/edit_news.html', {'item': item})
+
+
+@staff_member_required
+def confirm_pensioner_view(request, pk):
+    if request.method == 'POST':
+        user = get_object_or_404(User, pk=pk)
+        code = 'PENSION-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        user.is_pensioner = True
+        user.is_pensioner_pending = False
+        user.pensioner_promo_code = code
+        user.save()
+        Notification.objects.create(
+            recipient=user,
+            message=f'🎉 Ваш статус пенсионера подтверждён! Ваш промокод на скидку 20%: {code}. Используйте его при покупке билета.'
+        )
+        messages.success(request, f'Пользователь {user.username} подтверждён как пенсионер!')
+    return redirect('/admin-panel/?tab=pensioners')
+
+
+@staff_member_required
+def reject_pensioner_view(request, pk):
+    if request.method == 'POST':
+        user = get_object_or_404(User, pk=pk)
+        user.is_pensioner_pending = False
+        user.save()
+        Notification.objects.create(
+            recipient=user,
+            message='❌ К сожалению, ваша заявка на статус пенсионера была отклонена. Обратитесь на кассу для уточнения.'
+        )
+        messages.success(request, f'Заявка пользователя {user.username} отклонена.')
+    return redirect('/admin-panel/?tab=pensioners')
